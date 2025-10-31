@@ -8,14 +8,7 @@ TravelLens 프로젝트의 보안 및 구조 개선을 위한 대대적인 정�
 
 ### 1. API 키 하드코딩 제거 ✅
 
-#### Before (위험!)
-```typescript
-// ❌ BAD: API 키가 코드에 노출됨
-const firebaseConfig = {
-  apiKey: "AIzaSyDWYTIF28fYXR5ydS3TbkS4FXxo-wF9FUY",
-  authDomain: "k-finder-eb3d0.firebaseapp.com",
-  // ... 기타 설정
-};
+
 
 const API_KEY = "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";
 ```
@@ -209,5 +202,6 @@ git status
 **작성자**: AI Assistant  
 **날짜**: 2025-01-14  
 **프로젝트**: TravelLens - AI-Powered Korean Souvenir Discovery App
+
 
 
