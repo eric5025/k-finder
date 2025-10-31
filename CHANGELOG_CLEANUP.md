@@ -10,22 +10,6 @@ TravelLens 프로젝트의 보안 및 구조 개선을 위한 대대적인 정�
 
 
 
-const API_KEY = "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";
-```
-
-#### After (안전!)
-```typescript
-// ✅ GOOD: 환경 변수 사용
-import { FIREBASE_API_KEY, PERPLEXITY_API_KEY } from "@env";
-
-const firebaseConfig = {
-  apiKey: FIREBASE_API_KEY,
-  // ...
-};
-
-const API_KEY = PERPLEXITY_API_KEY;
-```
-
 ### 2. 영향받은 파일
 - ✅ `TravelLens/src/services/firebase.ts` - Firebase 설정을 환경 변수로 마이그레이션
 - ✅ `TravelLens/src/services/perplexity.ts` - Perplexity API 키를 환경 변수로 마이그레이션
@@ -120,9 +104,7 @@ k-finder/
 ## ⚠️ 주의사항
 
 ### 1. 기존 하드코딩된 API 키 처리
-기존에 코드에 노출되었던 API 키들:
-- 🔴 **Perplexity API Key**: `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`
-- 🔴 **Firebase API Key**: `AIzaSyDWYTIF28fYXR5ydS3TbkS4FXxo-wF9FUY`
+
 
 **권장 조치:**
 1. 이 키들은 이미 GitHub에 노출되었을 가능성이 있습니다
@@ -202,6 +184,7 @@ git status
 **작성자**: AI Assistant  
 **날짜**: 2025-01-14  
 **프로젝트**: TravelLens - AI-Powered Korean Souvenir Discovery App
+
 
 
 
