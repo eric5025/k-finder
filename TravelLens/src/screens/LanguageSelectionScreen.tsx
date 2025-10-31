@@ -31,7 +31,7 @@ const LanguageSelectionScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient colors={["#3B82F6", "#8B5CF6"]} style={styles.gradient}>
+      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.gradient}>
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>TravelLens</Text>

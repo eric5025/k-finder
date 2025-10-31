@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,14 +6,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  ScrollView,
   FlatList,
   Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
-import { ArrowLeft, Search, Filter } from "lucide-react-native";
+import { ArrowLeft, Filter, Star } from "lucide-react-native";
 import { RootStackParamList, Souvenir } from "../types";
 import { t, getCurrentLanguage } from "../i18n";
 import { COLORS, CATEGORIES } from "../constants";
@@ -37,9 +36,24 @@ interface Props {
 const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
   const { searchResults, searchQuery } = route.params;
   const currentLanguage = getCurrentLanguage();
+  const [imageLoadingStates, setImageLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   const handleBack = () => {
     navigation.goBack();
+  };
+
+  const handleImageLoad = (itemId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [itemId]: false }));
+  };
+
+  const handleImageError = (itemId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [itemId]: false }));
+  };
+
+  const handleImageLoadStart = (itemId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [itemId]: true }));
   };
 
   const handleSouvenirPress = (souvenir: Souvenir) => {
@@ -61,12 +75,12 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const renderSouvenirItem = ({ item }: { item: Souvenir }) => {
-    const localizedName = item[
-      `name_${currentLanguage}` as keyof Souvenir
-    ] as string;
-    const localizedDescription = item[
-      `description_${currentLanguage}` as keyof Souvenir
-    ] as string;
+    // 현재 언어에 맞는 텍스트 가져오기
+    const localizedName =
+      item[`name_${currentLanguage}` as keyof Souvenir] || item.name_ko;
+    const localizedDescription =
+      item[`description_${currentLanguage}` as keyof Souvenir] ||
+      item.description_ko;
 
     return (
       <TouchableOpacity
@@ -74,17 +88,23 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
         onPress={() => handleSouvenirPress(item)}
         activeOpacity={0.8}
       >
-        <View style={styles.souvenirImage}>
+        <View style={styles.souvenirImageContainer}>
           {item.image_url ? (
             <Image
               source={{ uri: item.image_url }}
-              style={styles.souvenirImageContent}
+              style={styles.souvenirImage}
               resizeMode="cover"
+              onLoad={() => handleImageLoad(item.id)}
+              onError={() => handleImageError(item.id)}
+              onLoadStart={() => handleImageLoadStart(item.id)}
             />
           ) : (
-            <Text style={styles.imagePlaceholder}>📸</Text>
+            <View style={styles.souvenirImagePlaceholder}>
+              <Text style={styles.souvenirImageText}>📸</Text>
+            </View>
           )}
         </View>
+
         <View style={styles.souvenirInfo}>
           <Text style={styles.souvenirName}>{localizedName}</Text>
           <Text style={styles.souvenirDescription} numberOfLines={2}>
@@ -110,13 +130,13 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <LinearGradient colors={["#3B82F6", "#8B5CF6"]} style={styles.header}>
+      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="white" />
           </TouchableOpacity>
           <View style={styles.searchInfo}>
-            <Text style={styles.searchTitle}>검색 결과</Text>
+            <Text style={styles.searchTitle}>{t("search.results")}</Text>
             <Text style={styles.searchQuery}>"{searchQuery}"</Text>
           </View>
           <TouchableOpacity style={styles.filterButton}>
@@ -129,17 +149,27 @@ const SearchResultsScreen: React.FC<Props> = ({ navigation, route }) => {
       <View style={styles.content}>
         <View style={styles.resultsHeader}>
           <Text style={styles.resultsCount}>
-            {searchResults.length}개의 결과를 찾았습니다
+            {t("search.foundResults", { count: searchResults.length })}
           </Text>
         </View>
 
-        <FlatList
-          data={searchResults}
-          renderItem={renderSouvenirItem}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.resultsList}
-        />
+        {searchResults.length > 0 ? (
+          <FlatList
+            data={searchResults}
+            renderItem={renderSouvenirItem}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.resultsList}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>🔍</Text>
+            <Text style={styles.emptyTitle}>{t("search.noResults")}</Text>
+            <Text style={styles.emptyDescription}>
+              {t("search.noResultsDescription")}
+            </Text>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -212,7 +242,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  souvenirImage: {
+  souvenirImageContainer: {
     width: 60,
     height: 60,
     borderRadius: 12,
@@ -222,11 +252,17 @@ const styles = StyleSheet.create({
     marginRight: 16,
     overflow: "hidden",
   },
-  souvenirImageContent: {
+  souvenirImage: {
     width: "100%",
     height: "100%",
   },
-  imagePlaceholder: {
+  souvenirImagePlaceholder: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+  },
+  souvenirImageText: {
     fontSize: 24,
   },
   souvenirInfo: {
@@ -262,6 +298,29 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
     fontWeight: "500",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+    backgroundColor: "#F8FAFC",
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 10,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.text,
+    marginBottom: 5,
+  },
+  emptyDescription: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: "center",
+    lineHeight: 20,
   },
 });
 

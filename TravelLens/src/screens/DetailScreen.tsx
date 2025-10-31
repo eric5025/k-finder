@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -27,6 +27,11 @@ import { COLORS, CATEGORIES } from "../constants";
 import MapView from "../components/MapView";
 import StarRating from "../components/StarRating";
 import MapNavigation from "../components/KakaoMap";
+import {
+  addToFavorites,
+  removeFromFavorites,
+  isFavorite,
+} from "../services/favorites";
 
 type DetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -44,6 +49,8 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { analysisResult } = route.params;
   const currentLanguage = getCurrentLanguage();
   const [showMap, setShowMap] = React.useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // 현재 언어에 맞는 텍스트 가져오기
   const getLocalizedText = (field: string) => {
@@ -72,12 +79,44 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  const handleShare = () => {
-    Alert.alert("공유", "공유 기능은 추후 구현 예정입니다.");
+  // 즐겨찾기 상태 확인
+  useEffect(() => {
+    checkFavoriteStatus();
+  }, []);
+
+  const checkFavoriteStatus = async () => {
+    try {
+      const favorite = await isFavorite(analysisResult.souvenir.id);
+      setIsFavorited(favorite);
+    } catch (error) {
+      console.error("즐겨찾기 상태 확인 오류:", error);
+    }
   };
 
-  const handleFavorite = () => {
-    Alert.alert("즐겨찾기", "즐겨찾기 기능은 추후 구현 예정입니다.");
+  const handleFavorite = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
+    try {
+      if (isFavorited) {
+        await removeFromFavorites(analysisResult.souvenir.id);
+        setIsFavorited(false);
+        Alert.alert(t("common.confirm"), t("favorites.removed"));
+      } else {
+        await addToFavorites(analysisResult.souvenir);
+        setIsFavorited(true);
+        Alert.alert(t("common.confirm"), t("favorites.added"));
+      }
+    } catch (error) {
+      console.error("즐겨찾기 처리 오류:", error);
+      Alert.alert(t("common.error"), t("favorites.error"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleShare = () => {
+    Alert.alert(t("common.confirm"), t("share.comingSoon"));
   };
 
   const handleMap = () => {
@@ -85,7 +124,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const handleSaveToHistory = () => {
-    Alert.alert("저장", "히스토리에 저장되었습니다.");
+    Alert.alert(t("common.confirm"), t("history.saved"));
   };
 
   return (
@@ -93,13 +132,13 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <LinearGradient colors={["#3B82F6", "#8B5CF6"]} style={styles.header}>
+      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="white" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
-            {showMap ? "지도" : "분석 결과"}
+            {showMap ? t("map.title") : t("result.title")}
           </Text>
           <View style={styles.headerButtons}>
             {!showMap && (
@@ -107,8 +146,13 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 <TouchableOpacity
                   onPress={handleFavorite}
                   style={styles.headerButton}
+                  disabled={isLoading}
                 >
-                  <Heart size={20} color="white" />
+                  <Heart
+                    size={20}
+                    color={isFavorited ? "red" : "white"}
+                    fill={isFavorited ? "red" : "none"}
+                  />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleShare}
@@ -158,7 +202,8 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 <View style={styles.ratingContainer}>
                   <StarRating rating={4.5} size={16} />
                   <Text style={styles.confidenceText}>
-                    (정확도: {Math.round(analysisResult.confidence * 100)}%)
+                    ({t("result.accuracy")}:{" "}
+                    {Math.round(analysisResult.confidence * 100)}%)
                   </Text>
                 </View>
               </View>
@@ -169,7 +214,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.priceCard}>
             <View style={styles.priceHeader}>
               <DollarSign size={20} color={COLORS.primary} />
-              <Text style={styles.priceTitle}>가격 정보</Text>
+              <Text style={styles.priceTitle}>{t("result.price")}</Text>
             </View>
             <Text style={styles.priceText}>
               {analysisResult.souvenir.price_range}
@@ -178,7 +223,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
           {/* Description */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>설명</Text>
+            <Text style={styles.sectionTitle}>{t("result.description")}</Text>
             <Text style={styles.descriptionText}>
               {getLocalizedText("description")}
             </Text>
@@ -186,7 +231,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
           {/* Usage Tips */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>사용 팁</Text>
+            <Text style={styles.sectionTitle}>{t("result.usageTips")}</Text>
             <View style={styles.tipsContainer}>
               <Text style={styles.tipsText}>
                 {analysisResult.souvenir.usage_tips}
@@ -196,7 +241,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
           {/* Tags */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>태그</Text>
+            <Text style={styles.sectionTitle}>{t("result.tags")}</Text>
             <View style={styles.tagsContainer}>
               {analysisResult.detected_tags.map((tag, index) => (
                 <View key={index} style={styles.tag}>
@@ -210,7 +255,9 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.actionButtons}>
             <TouchableOpacity style={styles.actionButton} onPress={handleMap}>
               <MapPin size={20} color="white" />
-              <Text style={styles.actionButtonText}>구매처 찾기</Text>
+              <Text style={styles.actionButtonText}>
+                {t("result.whereToBuy")}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -220,7 +267,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
               <Text
                 style={[styles.actionButtonText, styles.secondaryButtonText]}
               >
-                히스토리에 저장
+                {t("result.saveToHistory")}
               </Text>
             </TouchableOpacity>
           </View>

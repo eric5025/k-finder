@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -20,6 +20,11 @@ import {
 import { RootStackParamList } from "../types";
 import { t } from "../i18n";
 import { COLORS } from "../constants";
+import {
+  getSearchHistory,
+  clearSearchHistory,
+  SearchHistoryItem,
+} from "../services/searchHistory";
 
 type HistoryScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -30,44 +35,26 @@ interface Props {
   navigation: HistoryScreenNavigationProp;
 }
 
-// 샘플 히스토리 데이터
-const sampleHistoryData = [
-  {
-    id: "1",
-    name: "고추장",
-    category: "음식",
-    date: "2024-01-15",
-    time: "14:30",
-    imageUrl: null,
-  },
-  {
-    id: "2",
-    name: "인삼차",
-    category: "음식",
-    date: "2024-01-14",
-    time: "10:15",
-    imageUrl: null,
-  },
-  {
-    id: "3",
-    name: "한복",
-    category: "전통",
-    date: "2024-01-13",
-    time: "16:45",
-    imageUrl: null,
-  },
-  {
-    id: "4",
-    name: "마스크팩",
-    category: "화장품",
-    date: "2024-01-12",
-    time: "09:20",
-    imageUrl: null,
-  },
-];
-
 const HistoryScreen: React.FC<Props> = ({ navigation }) => {
-  const [historyData, setHistoryData] = useState(sampleHistoryData);
+  const [historyData, setHistoryData] = useState<SearchHistoryItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 검색 기록 로드
+  useEffect(() => {
+    loadSearchHistory();
+  }, []);
+
+  const loadSearchHistory = async () => {
+    try {
+      setIsLoading(true);
+      const history = await getSearchHistory(20);
+      setHistoryData(history);
+    } catch (error) {
+      console.error("검색 기록 로드 오류:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleBack = () => {
     navigation.goBack();
@@ -82,8 +69,15 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
       {
         text: "삭제",
         style: "destructive",
-        onPress: () => {
-          setHistoryData([]);
+        onPress: async () => {
+          try {
+            await clearSearchHistory();
+            setHistoryData([]);
+            Alert.alert("완료", "모든 검색 기록이 삭제되었습니다.");
+          } catch (error) {
+            console.error("검색 기록 삭제 오류:", error);
+            Alert.alert("오류", "검색 기록 삭제 중 오류가 발생했습니다.");
+          }
         },
       },
     ]);
@@ -173,7 +167,7 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <LinearGradient colors={["#3B82F6", "#8B5CF6"]} style={styles.header}>
+      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="white" />

@@ -31,24 +31,43 @@ const resources = {
       pointAtItem: "기념품을 카메라에 비춰주세요",
     },
     result: {
+      title: "분석 결과",
       name: "이름",
       description: "설명",
-      price: "가격",
+      price: "가격 정보",
       category: "카테고리",
       usageTips: "사용 팁",
-      whereToBuy: "구매처",
+      whereToBuy: "구매처 찾기",
       saveToHistory: "히스토리에 저장",
       share: "공유",
+      accuracy: "정확도",
+      tags: "태그",
     },
     history: {
       title: "검색 히스토리",
       noHistory: "검색 기록이 없습니다.",
       clearHistory: "히스토리 삭제",
+      saved: "히스토리에 저장되었습니다.",
     },
     map: {
       title: "구매처 지도",
       nearbyStores: "주변 상점",
       directions: "길찾기",
+    },
+    favorites: {
+      added: "즐겨찾기에 추가되었습니다.",
+      removed: "즐겨찾기에서 제거되었습니다.",
+      error: "즐겨찾기 처리 중 오류가 발생했습니다.",
+    },
+    share: {
+      comingSoon: "공유 기능은 추후 구현 예정입니다.",
+    },
+    search: {
+      results: "검색 결과",
+      foundResults: "{{count}}개의 결과를 찾았습니다",
+      noResults: "검색 결과가 없습니다",
+      noResultsDescription:
+        "다른 키워드로 검색해보시거나, 카메라로 기념품을 촬영해보세요.",
     },
   },
   en: {
@@ -80,24 +99,43 @@ const resources = {
       pointAtItem: "Point camera at souvenir",
     },
     result: {
+      title: "Analysis Result",
       name: "Name",
       description: "Description",
-      price: "Price",
+      price: "Price Information",
       category: "Category",
       usageTips: "Usage Tips",
-      whereToBuy: "Where to Buy",
+      whereToBuy: "Find Store",
       saveToHistory: "Save to History",
       share: "Share",
+      accuracy: "Accuracy",
+      tags: "Tags",
     },
     history: {
       title: "Search History",
       noHistory: "No search history.",
       clearHistory: "Clear History",
+      saved: "Saved to history.",
     },
     map: {
       title: "Store Map",
       nearbyStores: "Nearby Stores",
       directions: "Directions",
+    },
+    favorites: {
+      added: "Added to favorites.",
+      removed: "Removed from favorites.",
+      error: "Error occurred while processing favorites.",
+    },
+    share: {
+      comingSoon: "Share feature will be implemented soon.",
+    },
+    search: {
+      results: "Search Results",
+      foundResults: "Found {{count}} results",
+      noResults: "No search results",
+      noResultsDescription:
+        "Try searching with different keywords or take a photo of a souvenir with the camera.",
     },
   },
   ja: {
@@ -129,24 +167,43 @@ const resources = {
       pointAtItem: "お土産をカメラに向けてください",
     },
     result: {
+      title: "分析結果",
       name: "名前",
       description: "説明",
-      price: "価格",
+      price: "価格情報",
       category: "カテゴリ",
       usageTips: "使用方法",
-      whereToBuy: "購入場所",
+      whereToBuy: "購入場所を探す",
       saveToHistory: "履歴に保存",
       share: "共有",
+      accuracy: "精度",
+      tags: "タグ",
     },
     history: {
       title: "検索履歴",
       noHistory: "検索履歴がありません。",
       clearHistory: "履歴を削除",
+      saved: "履歴に保存されました。",
     },
     map: {
       title: "店舗マップ",
       nearbyStores: "近くの店舗",
       directions: "ルート案内",
+    },
+    favorites: {
+      added: "お気に入りに追加されました。",
+      removed: "お気に入りから削除されました。",
+      error: "お気に入りの処理中にエラーが発生しました。",
+    },
+    share: {
+      comingSoon: "共有機能は今後実装予定です。",
+    },
+    search: {
+      results: "検索結果",
+      foundResults: "{{count}}件の結果が見つかりました",
+      noResults: "検索結果がありません",
+      noResultsDescription:
+        "別のキーワードで検索するか、カメラでお土産を撮影してみてください。",
     },
   },
   zh: {
@@ -178,24 +235,42 @@ const resources = {
       pointAtItem: "将纪念品对准相机",
     },
     result: {
+      title: "分析结果",
       name: "名称",
       description: "描述",
-      price: "价格",
+      price: "价格信息",
       category: "类别",
       usageTips: "使用提示",
-      whereToBuy: "购买地点",
+      whereToBuy: "查找购买地点",
       saveToHistory: "保存到历史",
       share: "分享",
+      accuracy: "准确度",
+      tags: "标签",
     },
     history: {
       title: "搜索历史",
       noHistory: "没有搜索历史。",
       clearHistory: "清除历史",
+      saved: "已保存到历史。",
     },
     map: {
       title: "商店地图",
       nearbyStores: "附近商店",
       directions: "路线导航",
+    },
+    favorites: {
+      added: "已添加到收藏。",
+      removed: "已从收藏中移除。",
+      error: "处理收藏时发生错误。",
+    },
+    share: {
+      comingSoon: "分享功能将在稍后实现。",
+    },
+    search: {
+      results: "搜索结果",
+      foundResults: "找到 {{count}} 个结果",
+      noResults: "没有搜索结果",
+      noResultsDescription: "尝试使用不同的关键词搜索，或者用相机拍摄纪念品。",
     },
   },
   es: {
@@ -227,24 +302,43 @@ const resources = {
       pointAtItem: "Apunte la cámara al souvenir",
     },
     result: {
+      title: "Resultado del Análisis",
       name: "Nombre",
       description: "Descripción",
-      price: "Precio",
+      price: "Información de Precio",
       category: "Categoría",
       usageTips: "Consejos de Uso",
-      whereToBuy: "Dónde Comprar",
+      whereToBuy: "Encontrar Tienda",
       saveToHistory: "Guardar en Historial",
       share: "Compartir",
+      accuracy: "Precisión",
+      tags: "Etiquetas",
     },
     history: {
       title: "Historial de Búsqueda",
       noHistory: "No hay historial de búsqueda.",
       clearHistory: "Borrar Historial",
+      saved: "Guardado en el historial.",
     },
     map: {
       title: "Mapa de Tiendas",
       nearbyStores: "Tiendas Cercanas",
       directions: "Direcciones",
+    },
+    favorites: {
+      added: "Agregado a favoritos.",
+      removed: "Eliminado de favoritos.",
+      error: "Error al procesar favoritos.",
+    },
+    share: {
+      comingSoon: "La función de compartir se implementará pronto.",
+    },
+    search: {
+      results: "Resultados de Búsqueda",
+      foundResults: "Se encontraron {{count}} resultados",
+      noResults: "No hay resultados de búsqueda",
+      noResultsDescription:
+        "Intenta buscar con diferentes palabras clave o toma una foto de un souvenir con la cámara.",
     },
   },
 };
@@ -263,7 +357,7 @@ export const getCurrentLanguage = (): Language => {
 };
 
 // 번역 함수
-export const t = (key: string): string => {
+export const t = (key: string, variables?: Record<string, any>): string => {
   const keys = key.split(".");
   let value: any = resources[currentLanguage];
 
@@ -271,11 +365,21 @@ export const t = (key: string): string => {
     if (value && typeof value === "object" && k in value) {
       value = value[k];
     } else {
-      return key; // 키가 없으면 원본 키 반환
+      return key;
     }
   }
 
-  return typeof value === "string" ? value : key;
+  let result = typeof value === "string" ? value : key;
+
+  // 변수 치환
+  if (variables) {
+    Object.keys(variables).forEach((varKey) => {
+      const regex = new RegExp(`{{${varKey}}}`, "g");
+      result = result.replace(regex, String(variables[varKey]));
+    });
+  }
+
+  return result;
 };
 
 // 언어별 텍스트 가져오기

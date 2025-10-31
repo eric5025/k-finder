@@ -1,13 +1,14 @@
 import { AnalysisResult } from "../types/index";
 import { PERPLEXITY_API_KEY } from "@env";
 
-// Perplexity API 키
-const API_KEY =
-  PERPLEXITY_API_KEY || "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";
+// Perplexity API 키 (환경 변수에서 가져오기)
+const API_KEY = PERPLEXITY_API_KEY;
 
 const validateApiKey = () => {
   if (!API_KEY || API_KEY.length < 10) {
-    throw new Error("Perplexity API 키가 유효하지 않습니다.");
+    throw new Error(
+      "Perplexity API 키가 설정되지 않았습니다. .env 파일에 PERPLEXITY_API_KEY를 추가해주세요."
+    );
   }
   return true;
 };
@@ -75,8 +76,8 @@ export const analyzeImage = async (
             ],
           },
         ],
-        max_tokens: 1000,
-        temperature: 0.3,
+        max_tokens: 1500,
+        temperature: 0.2,
       }),
     });
 
@@ -107,8 +108,11 @@ export const analyzeImage = async (
 
     let analysis;
     try {
+      // 코드 블록 제거 (```json ... ``` 형식)
+      let cleanContent = content.replace(/```json\n?/g, "").replace(/```\n?/g, "");
+      
       // JSON 부분만 추출 (중괄호로 시작하고 끝나는 부분)
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("JSON 형식을 찾을 수 없습니다.");
       }
@@ -117,6 +121,7 @@ export const analyzeImage = async (
       analysis = JSON.parse(jsonContent);
     } catch (parseError) {
       console.error("JSON 파싱 오류:", parseError);
+      console.error("원본 응답:", content);
       throw new Error("AI 응답을 파싱할 수 없습니다.");
     }
 
