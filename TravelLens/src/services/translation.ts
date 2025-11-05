@@ -20,7 +20,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: "hi", name: "힌디어", nativeName: "हिन्दी", flag: "🇮🇳" },
 ];
 
-// LibreTranslate 언어 코드 매핑
+// LibreTranslate 언어 코드 매핑 (지원되는 언어만)
 const LIBRETRANSLATE_LANG_MAP: { [key: string]: string } = {
   ko: "ko",
   en: "en",
@@ -33,11 +33,10 @@ const LIBRETRANSLATE_LANG_MAP: { [key: string]: string } = {
   pt: "pt",
   ru: "ru",
   ar: "ar",
-  th: "th",
-  vi: "vi",
-  id: "id",
-  hi: "hi",
 };
+
+// LibreTranslate가 지원하지 않는 언어들 (영어로 폴백)
+const UNSUPPORTED_LANGUAGES = ["th", "vi", "id", "hi"];
 
 // 번역 캐시 (같은 텍스트 중복 번역 방지)
 const translationCache = new Map<string, string>();
@@ -53,15 +52,20 @@ export const translateText = async (
   // 캐시 확인
   const cacheKey = `${text}_${targetLanguage}`;
   if (translationCache.has(cacheKey)) {
-    console.log("캐시에서 번역 로드:", text.substring(0, 20));
+    console.log("✓ 캐시에서 번역 로드:", text.substring(0, 20));
     return translationCache.get(cacheKey)!;
   }
 
   try {
-    const targetLangCode =
-      LIBRETRANSLATE_LANG_MAP[targetLanguage] || targetLanguage;
+    // 지원하지 않는 언어는 영어로 대체
+    let targetLangCode = LIBRETRANSLATE_LANG_MAP[targetLanguage];
+    
+    if (!targetLangCode || UNSUPPORTED_LANGUAGES.includes(targetLanguage)) {
+      console.log(`⚠️ ${targetLanguage}는 LibreTranslate가 지원하지 않음 -> 영어로 번역`);
+      targetLangCode = "en";
+    }
 
-    console.log(`번역 요청: "${text.substring(0, 30)}..." -> ${targetLanguage}`);
+    console.log(`🔄 번역 요청: "${text.substring(0, 30)}..." (ko → ${targetLangCode})`);
 
     const response = await fetch("https://libretranslate.com/translate", {
       method: "POST",
@@ -77,20 +81,22 @@ export const translateText = async (
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ API 오류 (${response.status}):`, errorText);
       throw new Error(`번역 API 오류: ${response.status}`);
     }
 
     const data = await response.json();
     const translatedText = data.translatedText;
 
-    console.log(`번역 완료: "${translatedText.substring(0, 30)}..."`);
+    console.log(`✓ 번역 완료: "${translatedText.substring(0, 30)}..."`);
 
     // 캐시 저장
     translationCache.set(cacheKey, translatedText);
 
     return translatedText;
   } catch (error) {
-    console.error("LibreTranslate 오류:", error);
+    console.error("❌ LibreTranslate 오류:", error);
     // 번역 실패 시 원본 반환
     return text;
   }
