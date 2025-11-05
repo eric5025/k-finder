@@ -353,8 +353,13 @@ let currentLanguage: Language = "ko";
 export const initLanguage = async (): Promise<Language> => {
   try {
     const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-    if (savedLanguage && ["ko", "en", "ja", "zh", "es"].includes(savedLanguage)) {
+    const validLanguages = ["ko", "en", "ja", "zh", "es", "fr", "de", "it", "pt", "ru", "ar", "th", "vi", "id", "hi"];
+    
+    if (savedLanguage && validLanguages.includes(savedLanguage)) {
       currentLanguage = savedLanguage as Language;
+      console.log("저장된 언어 로드:", savedLanguage);
+    } else {
+      console.log("기본 언어 사용: ko");
     }
   } catch (error) {
     console.error("언어 로드 오류:", error);

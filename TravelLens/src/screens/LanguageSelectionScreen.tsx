@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types";
-import { SUPPORTED_LANGUAGES } from "../constants";
-import { t } from "../i18n";
+import { SUPPORTED_LANGUAGES } from "../services/translation";
 import { useLanguage } from "../contexts/LanguageContext";
 
 type LanguageSelectionScreenNavigationProp = StackNavigationProp<
@@ -38,10 +38,13 @@ const LanguageSelectionScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.content}>
           <View style={styles.header}>
             <Text style={styles.title}>TravelLens</Text>
-            <Text style={styles.subtitle}>{t("language.selectLanguage")}</Text>
+            <Text style={styles.subtitle}>언어를 선택하세요 / Select Language</Text>
           </View>
 
-          <View style={styles.languageList}>
+          <ScrollView 
+            style={styles.languageList}
+            showsVerticalScrollIndicator={false}
+          >
             {SUPPORTED_LANGUAGES.map((language) => (
               <TouchableOpacity
                 key={language.code}
@@ -51,12 +54,12 @@ const LanguageSelectionScreen: React.FC<Props> = ({ navigation }) => {
               >
                 <View style={styles.languageContent}>
                   <Text style={styles.flag}>{language.flag}</Text>
-                  <Text style={styles.languageName}>{language.name}</Text>
+                  <Text style={styles.languageName}>{language.nativeName}</Text>
                 </View>
                 <View style={styles.checkbox} />
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>

@@ -24,6 +24,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     // 앱 시작 시 저장된 언어 불러오기
     const loadLanguage = async () => {
       const lang = await initLanguage();
+      console.log("초기 언어 로드:", lang);
       setCurrentLanguage(lang);
       setIsInitialized(true);
     };

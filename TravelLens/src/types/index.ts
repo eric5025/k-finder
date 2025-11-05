@@ -1,5 +1,8 @@
-// 언어 타입
-export type Language = "ko" | "en" | "ja" | "zh" | "es";
+// 언어 타입 (전 세계 모든 주요 언어 지원)
+export type Language = 
+  | "ko" | "en" | "ja" | "zh" | "es" 
+  | "fr" | "de" | "it" | "pt" | "ru" 
+  | "ar" | "th" | "vi" | "id" | "hi";
 
 // 기념품 카테고리
 export type Category =
