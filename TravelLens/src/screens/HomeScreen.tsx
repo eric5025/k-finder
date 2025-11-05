@@ -9,11 +9,12 @@ import {
   Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Camera, Image, History, Globe } from "lucide-react-native";
+import { Camera, Image, History } from "lucide-react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as ImagePicker from "expo-image-picker";
 import { RootStackParamList } from "../types";
 import { useTranslation } from "../hooks/useTranslation";
+import LanguageDropdown from "../components/LanguageDropdown";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 
@@ -100,10 +101,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate("History");
   };
 
-  const handleLanguageChange = () => {
-    navigation.navigate("LanguageSelection");
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -113,12 +110,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.headerContent}>
             <Text style={styles.appName}>TravelLens</Text>
             <View style={styles.headerButtons}>
-              <TouchableOpacity
-                onPress={handleLanguageChange}
-                style={styles.headerButton}
-              >
-                <Globe size={24} color="white" />
-              </TouchableOpacity>
+              <LanguageDropdown />
               <TouchableOpacity onPress={handleHistory} style={styles.headerButton}>
                 <History size={24} color="white" />
               </TouchableOpacity>

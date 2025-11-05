@@ -42,7 +42,7 @@ const LanguageSelectionScreen: React.FC<Props> = ({ navigation }) => {
           </View>
 
           <ScrollView 
-            style={styles.languageList}
+            contentContainerStyle={styles.languageList}
             showsVerticalScrollIndicator={false}
           >
             {SUPPORTED_LANGUAGES.map((language) => (
@@ -101,8 +101,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   languageList: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
+    paddingVertical: 20,
   },
   languageButton: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
