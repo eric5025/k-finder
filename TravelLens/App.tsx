@@ -10,6 +10,7 @@ import HomeScreen from "./src/screens/HomeScreen";
 import LoadingScreen from "./src/screens/LoadingScreen";
 import DetailScreen from "./src/screens/DetailScreen";
 import HistoryScreen from "./src/screens/HistoryScreen";
+import { LanguageProvider } from "./src/contexts/LanguageContext";
 
 export type RootStackParamList = {
   LanguageSelection: undefined;
@@ -25,9 +26,10 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="light" />
-        <Stack.Navigator
+      <LanguageProvider>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <Stack.Navigator
           initialRouteName="LanguageSelection"
           screenOptions={{
             headerShown: false,
@@ -57,7 +59,8 @@ export default function App() {
           <Stack.Screen name="Detail" component={DetailScreen} />
           <Stack.Screen name="History" component={HistoryScreen} />
         </Stack.Navigator>
-      </NavigationContainer>
+        </NavigationContainer>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

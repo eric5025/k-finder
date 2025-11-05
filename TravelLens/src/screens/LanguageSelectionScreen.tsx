@@ -11,7 +11,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../types";
 import { SUPPORTED_LANGUAGES } from "../constants";
-import { setLanguage, t } from "../i18n";
+import { t } from "../i18n";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type LanguageSelectionScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -23,8 +24,10 @@ interface Props {
 }
 
 const LanguageSelectionScreen: React.FC<Props> = ({ navigation }) => {
-  const handleLanguageSelect = (languageCode: string) => {
-    setLanguage(languageCode as any);
+  const { changeLanguage } = useLanguage();
+
+  const handleLanguageSelect = async (languageCode: string) => {
+    await changeLanguage(languageCode as any);
     navigation.replace("Login");
   };
 

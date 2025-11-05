@@ -14,8 +14,8 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import { ArrowLeft } from "lucide-react-native";
 import { RootStackParamList, AnalysisResult } from "../types";
-import { getCurrentLanguage } from "../i18n";
 import { COLORS, CATEGORIES } from "../constants";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type DetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -31,7 +31,7 @@ interface Props {
 
 const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { analysisResult } = route.params;
-  const currentLanguage = getCurrentLanguage();
+  const { currentLanguage } = useLanguage();
 
   // 현재 언어에 맞는 텍스트 가져오기
   const getLocalizedText = (field: string) => {
@@ -118,6 +118,14 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
             {getLocalizedText("description")}
           </Text>
         </View>
+        {getLocalizedText("usage_tips") && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📝 사용 팁</Text>
+            <Text style={styles.descriptionText}>
+              {getLocalizedText("usage_tips")}
+            </Text>
+          </View>
+        )}
 
         {/* Tags */}
         {analysisResult.detected_tags && analysisResult.detected_tags.length > 0 && (

@@ -1,4 +1,7 @@
 import { Language } from "../types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const LANGUAGE_STORAGE_KEY = "@travellens_language";
 
 // 다국어 리소스
 const resources = {
@@ -346,9 +349,28 @@ const resources = {
 // 현재 언어 상태
 let currentLanguage: Language = "ko";
 
+// 언어 초기화 (앱 시작 시 호출)
+export const initLanguage = async (): Promise<Language> => {
+  try {
+    const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+    if (savedLanguage && ["ko", "en", "ja", "zh", "es"].includes(savedLanguage)) {
+      currentLanguage = savedLanguage as Language;
+    }
+  } catch (error) {
+    console.error("언어 로드 오류:", error);
+  }
+  return currentLanguage;
+};
+
 // 언어 변경 함수
-export const setLanguage = (language: Language) => {
-  currentLanguage = language;
+export const setLanguage = async (language: Language) => {
+  try {
+    currentLanguage = language;
+    await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    console.log("언어 변경:", language);
+  } catch (error) {
+    console.error("언어 저장 오류:", error);
+  }
 };
 
 // 현재 언어 가져오기
@@ -399,4 +421,4 @@ export const getText = (key: string, language?: Language): string => {
   return typeof value === "string" ? value : key;
 };
 
-export default { t, setLanguage, getCurrentLanguage, getText };
+export default { t, setLanguage, getCurrentLanguage, getText, initLanguage };
