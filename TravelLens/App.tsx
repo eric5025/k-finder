@@ -5,18 +5,18 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import LanguageSelectionScreen from "./src/screens/LanguageSelectionScreen";
+import LoginScreen from "./src/screens/LoginScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import LoadingScreen from "./src/screens/LoadingScreen";
 import DetailScreen from "./src/screens/DetailScreen";
-import SearchResultsScreen from "./src/screens/SearchResultsScreen";
 import HistoryScreen from "./src/screens/HistoryScreen";
 
 export type RootStackParamList = {
   LanguageSelection: undefined;
+  Login: undefined;
   Home: undefined;
   Loading: { imageUri: string };
   Detail: { analysisResult: any };
-  SearchResults: { searchResults: any[]; searchQuery: string };
   History: undefined;
 };
 
@@ -51,10 +51,10 @@ export default function App() {
             name="LanguageSelection"
             component={LanguageSelectionScreen}
           />
+          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Loading" component={LoadingScreen} />
           <Stack.Screen name="Detail" component={DetailScreen} />
-          <Stack.Screen name="SearchResults" component={SearchResultsScreen} />
           <Stack.Screen name="History" component={HistoryScreen} />
         </Stack.Navigator>
       </NavigationContainer>

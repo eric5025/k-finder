@@ -1,22 +1,40 @@
 {
   "expo": {
     "name": "TravelLens",
-    "slug": "TravelLens",
+    "slug": "travellens",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "privacy": "public",
+    "description": "AI-powered Korean souvenir recognition app for tourists. Take a photo and instantly identify Korean souvenirs with multilingual information.",
+    "scheme": "travellens",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#FF6B00"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.travellens.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "We need access to your camera to take photos of Korean souvenirs.",
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library to select souvenir images.",
+        "NSLocationWhenInUseUsageDescription": "We use your location to show nearby souvenir shops on the map."
+      }
     },
     "android": {
       "package": "com.travellens.app",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FF6B00"

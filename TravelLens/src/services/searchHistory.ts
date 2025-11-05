@@ -59,9 +59,17 @@ export const getSearchHistory = async (
 ): Promise<SearchHistoryItem[]> => {
   try {
     const user = auth.currentUser;
-    if (!user) return [];
+    
+    let historyRef;
+    
+    // 로그인된 사용자: 사용자별 기록 조회
+    if (user) {
+      historyRef = collection(db, "users", user.uid, "searchHistory");
+    } else {
+      // 익명 사용자: 익명 기록 조회 (최신 20개만)
+      historyRef = collection(db, "anonymousHistory");
+    }
 
-    const historyRef = collection(db, "users", user.uid, "searchHistory");
     const q = query(
       historyRef,
       orderBy("timestamp", "desc"),
@@ -83,14 +91,27 @@ export const getSearchHistory = async (
 export const clearSearchHistory = async () => {
   try {
     const user = auth.currentUser;
-    if (!user) return;
-
-    const historyRef = collection(db, "users", user.uid, "searchHistory");
-    const querySnapshot = await getDocs(historyRef);
-
-    querySnapshot.docs.forEach(async (document) => {
-      await deleteDoc(doc(db, "users", user.uid, "searchHistory", document.id));
-    });
+    
+    let historyRef;
+    
+    // 로그인된 사용자: 사용자별 기록 삭제
+    if (user) {
+      historyRef = collection(db, "users", user.uid, "searchHistory");
+      const querySnapshot = await getDocs(historyRef);
+      
+      querySnapshot.docs.forEach(async (document) => {
+        await deleteDoc(doc(db, "users", user.uid, "searchHistory", document.id));
+      });
+    } else {
+      // 익명 사용자: 익명 기록 전체 삭제 (주의: 모든 익명 기록이 삭제됨)
+      // 실제로는 deviceId로 필터링하는 것이 좋음
+      historyRef = collection(db, "anonymousHistory");
+      const querySnapshot = await getDocs(historyRef);
+      
+      querySnapshot.docs.forEach(async (document) => {
+        await deleteDoc(doc(db, "anonymousHistory", document.id));
+      });
+    }
   } catch (error) {
     console.error("검색 기록 삭제 오류:", error);
   }

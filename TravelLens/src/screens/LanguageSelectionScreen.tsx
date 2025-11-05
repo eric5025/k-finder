@@ -25,7 +25,7 @@ interface Props {
 const LanguageSelectionScreen: React.FC<Props> = ({ navigation }) => {
   const handleLanguageSelect = (languageCode: string) => {
     setLanguage(languageCode as any);
-    navigation.replace("Home");
+    navigation.replace("Login");
   };
 
   return (

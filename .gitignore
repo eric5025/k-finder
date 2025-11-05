@@ -23,3 +23,22 @@ node_modules/
 
 # OS specific
 .DS_Store
+Thumbs.db
+
+# Development tools (not needed for build)
+.cursor/
+.taskmaster/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Build artifacts (will be generated)
+.expo/
+dist/
+web-build/
+build/
+*.apk
+*.ipa
+*.aab
