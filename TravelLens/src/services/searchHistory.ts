@@ -93,15 +93,15 @@ export const clearSearchHistory = async () => {
     const user = auth.currentUser;
     
     let historyRef;
-    
+
     // 로그인된 사용자: 사용자별 기록 삭제
     if (user) {
       historyRef = collection(db, "users", user.uid, "searchHistory");
-      const querySnapshot = await getDocs(historyRef);
-      
-      querySnapshot.docs.forEach(async (document) => {
-        await deleteDoc(doc(db, "users", user.uid, "searchHistory", document.id));
-      });
+    const querySnapshot = await getDocs(historyRef);
+
+    querySnapshot.docs.forEach(async (document) => {
+      await deleteDoc(doc(db, "users", user.uid, "searchHistory", document.id));
+    });
     } else {
       // 익명 사용자: 익명 기록 전체 삭제 (주의: 모든 익명 기록이 삭제됨)
       // 실제로는 deviceId로 필터링하는 것이 좋음
