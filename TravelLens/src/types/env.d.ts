@@ -12,6 +12,10 @@ declare module "@env" {
   export const FIREBASE_APP_ID: string;
   export const FIREBASE_MEASUREMENT_ID: string;
   
+  // Google OAuth Configuration
+  export const GOOGLE_WEB_CLIENT_ID: string;
+  export const GOOGLE_IOS_CLIENT_ID: string;
+  
   // App Configuration
   export const APP_ENV: string;
   export const DEBUG: string;

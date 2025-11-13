@@ -5,73 +5,84 @@ import {
   StyleSheet,
   TouchableOpacity,
   Modal,
-  FlatList,
-  Dimensions,
+  ScrollView,
 } from "react-native";
-import { ChevronDown, Check } from "lucide-react-native";
-import { SUPPORTED_LANGUAGES } from "../services/translation";
+import { ChevronDown } from "lucide-react-native";
 import { useLanguage } from "../contexts/LanguageContext";
 
+// 지원하는 언어 목록
+const SUPPORTED_LANGUAGES = [
+  { code: "ko", name: "한국어", nativeName: "한국어", flag: "🇰🇷" },
+  { code: "en", name: "English", nativeName: "English", flag: "🇺🇸" },
+  { code: "ja", name: "일본어", nativeName: "日本語", flag: "🇯🇵" },
+  { code: "zh", name: "중국어", nativeName: "中文", flag: "🇨🇳" },
+  { code: "es", name: "스페인어", nativeName: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "프랑스어", nativeName: "Français", flag: "🇫🇷" },
+  { code: "de", name: "독일어", nativeName: "Deutsch", flag: "🇩🇪" },
+  { code: "it", name: "이탈리아어", nativeName: "Italiano", flag: "🇮🇹" },
+  { code: "pt", name: "포르투갈어", nativeName: "Português", flag: "🇵🇹" },
+  { code: "ru", name: "러시아어", nativeName: "Русский", flag: "🇷🇺" },
+  { code: "ar", name: "아랍어", nativeName: "العربية", flag: "🇸🇦" },
+  { code: "th", name: "태국어", nativeName: "ไทย", flag: "🇹🇭" },
+  { code: "vi", name: "베트남어", nativeName: "Tiếng Việt", flag: "🇻🇳" },
+  { code: "id", name: "인도네시아어", nativeName: "Bahasa Indonesia", flag: "🇮🇩" },
+  { code: "hi", name: "힌디어", nativeName: "हिन्दी", flag: "🇮🇳" },
+];
+
 const LanguageDropdown: React.FC = () => {
-  const { currentLanguage, changeLanguage } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const { currentLanguage, setLanguage } = useLanguage();
 
-  const currentLangData = SUPPORTED_LANGUAGES.find(
-    (lang) => lang.code === currentLanguage
-  );
+  const currentLangName =
+    SUPPORTED_LANGUAGES.find((lang) => lang.code === currentLanguage)
+      ?.nativeName || "한국어";
 
-  const handleSelect = async (languageCode: string) => {
-    await changeLanguage(languageCode as any);
-    setIsOpen(false);
+  const handleLanguageSelect = async (langCode: string) => {
+    await setLanguage(langCode);
+    setIsVisible(false);
   };
 
   return (
-    <View style={styles.container}>
+    <View>
       <TouchableOpacity
         style={styles.dropdownButton}
-        onPress={() => setIsOpen(true)}
+        onPress={() => setIsVisible(true)}
       >
-        <Text style={styles.flag}>{currentLangData?.flag || "🌍"}</Text>
-        <Text style={styles.languageText}>{currentLangData?.nativeName || "언어"}</Text>
-        <ChevronDown size={20} color="white" />
+        <Text style={styles.dropdownText}>{currentLangName}</Text>
+        <ChevronDown size={16} color="white" />
       </TouchableOpacity>
 
       <Modal
-        visible={isOpen}
-        transparent={true}
+        visible={isVisible}
+        transparent
         animationType="fade"
-        onRequestClose={() => setIsOpen(false)}
+        onRequestClose={() => setIsVisible(false)}
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setIsOpen(false)}
+          onPress={() => setIsVisible(false)}
         >
           <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>언어 선택 / Select Language</Text>
-            </View>
-            
-            <FlatList
-              data={SUPPORTED_LANGUAGES}
-              keyExtractor={(item) => item.code}
-              renderItem={({ item }) => (
+            <Text style={styles.modalTitle}>언어 선택</Text>
+            <ScrollView style={styles.languageList}>
+              {SUPPORTED_LANGUAGES.map((lang) => (
                 <TouchableOpacity
+                  key={lang.code}
                   style={[
                     styles.languageItem,
-                    item.code === currentLanguage && styles.selectedItem,
+                    currentLanguage === lang.code && styles.languageItemActive,
                   ]}
-                  onPress={() => handleSelect(item.code)}
+                  onPress={() => handleLanguageSelect(lang.code)}
                 >
-                  <Text style={styles.itemFlag}>{item.flag}</Text>
-                  <Text style={styles.itemName}>{item.nativeName}</Text>
-                  {item.code === currentLanguage && (
-                    <Check size={20} color="#FF6B00" />
+                  <Text style={styles.languageFlag}>{lang.flag}</Text>
+                  <Text style={styles.languageName}>{lang.nativeName}</Text>
+                  {currentLanguage === lang.code && (
+                    <Text style={styles.checkmark}>✓</Text>
                   )}
                 </TouchableOpacity>
-              )}
-              showsVerticalScrollIndicator={false}
-            />
+              ))}
+            </ScrollView>
           </View>
         </TouchableOpacity>
       </Modal>
@@ -80,25 +91,19 @@ const LanguageDropdown: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: "relative",
-  },
   dropdownButton: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    gap: 6,
   },
-  flag: {
-    fontSize: 20,
-  },
-  languageText: {
+  dropdownText: {
     color: "white",
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "500",
   },
   modalOverlay: {
     flex: 1,
@@ -107,40 +112,43 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
+    width: "80%",
+    maxHeight: "70%",
     backgroundColor: "white",
-    borderRadius: 20,
-    width: Dimensions.get("window").width * 0.85,
-    maxHeight: Dimensions.get("window").height * 0.7,
-    overflow: "hidden",
-  },
-  modalHeader: {
-    backgroundColor: "#FF6B00",
-    padding: 16,
-    alignItems: "center",
+    borderRadius: 16,
+    padding: 20,
   },
   modalTitle: {
-    color: "white",
     fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  languageList: {
+    maxHeight: 400,
   },
   languageItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
   },
-  selectedItem: {
-    backgroundColor: "#FFF5E6",
+  languageItemActive: {
+    backgroundColor: "#FFF5F0",
   },
-  itemFlag: {
+  languageFlag: {
     fontSize: 24,
     marginRight: 12,
   },
-  itemName: {
+  languageName: {
     flex: 1,
     fontSize: 16,
-    color: "#1F2937",
+  },
+  checkmark: {
+    fontSize: 18,
+    color: "#FF6B00",
+    fontWeight: "bold",
   },
 });
 

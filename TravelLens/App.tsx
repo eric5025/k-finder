@@ -4,7 +4,6 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import LanguageSelectionScreen from "./src/screens/LanguageSelectionScreen";
 import LoginScreen from "./src/screens/LoginScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import LoadingScreen from "./src/screens/LoadingScreen";
@@ -13,7 +12,6 @@ import HistoryScreen from "./src/screens/HistoryScreen";
 import { LanguageProvider } from "./src/contexts/LanguageContext";
 
 export type RootStackParamList = {
-  LanguageSelection: undefined;
   Login: undefined;
   Home: undefined;
   Loading: { imageUri: string };
@@ -30,7 +28,7 @@ export default function App() {
         <NavigationContainer>
           <StatusBar style="light" />
           <Stack.Navigator
-          initialRouteName="LanguageSelection"
+          initialRouteName="Login"
           screenOptions={{
             headerShown: false,
             cardStyleInterpolator: ({ current, layouts }) => {
@@ -49,10 +47,6 @@ export default function App() {
             },
           }}
         >
-          <Stack.Screen
-            name="LanguageSelection"
-            component={LanguageSelectionScreen}
-          />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Loading" component={LoadingScreen} />

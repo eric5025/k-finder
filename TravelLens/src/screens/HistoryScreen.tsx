@@ -8,6 +8,7 @@ import {
   StatusBar,
   FlatList,
   Alert,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -104,8 +105,14 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
     ]);
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (timestamp: Date | string) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    
+    // Invalid Date 체크
+    if (isNaN(date.getTime())) {
+      return "날짜 정보 없음";
+    }
+    
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -122,6 +129,20 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const formatTime = (timestamp: Date | string) => {
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    
+    // Invalid Date 체크
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+    
+    return date.toLocaleTimeString("ko-KR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   const renderHistoryItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.historyItem}
@@ -130,15 +151,24 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
     >
       <View style={styles.itemLeft}>
         <View style={styles.imageContainer}>
-          <ImageIcon size={24} color={COLORS.textSecondary} />
+          {item.imageUrl ? (
+            <Image 
+              source={{ uri: item.imageUrl }} 
+              style={styles.historyImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <ImageIcon size={24} color={COLORS.textSecondary} />
+          )}
         </View>
         <View style={styles.itemInfo}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemCategory}>{item.category}</Text>
+          <Text style={styles.itemName} numberOfLines={1}>
+            {item.query || "기념품"}
+          </Text>
           <View style={styles.itemTime}>
             <Clock size={12} color={COLORS.textSecondary} />
             <Text style={styles.itemTimeText}>
-              {formatDate(item.date)} • {item.time}
+              {formatDate(item.timestamp)} • {formatTime(item.timestamp)}
             </Text>
           </View>
         </View>
@@ -268,6 +298,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
+    overflow: "hidden",
+  },
+  historyImage: {
+    width: 48,
+    height: 48,
   },
   itemInfo: {
     flex: 1,

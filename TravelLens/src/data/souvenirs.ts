@@ -5,11 +5,6 @@ export interface AISearchResult {
   souvenir: Souvenir;
   confidence: number;
   detected_tags: string[];
-  translated_content: {
-    name: string;
-    description: string;
-    usage_tips: string;
-  };
 }
 
 // AI 검색 결과를 기반으로 한 기념품 데이터
