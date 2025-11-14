@@ -202,10 +202,10 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-        {/* Header */}
+      {/* Header */}
         <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
@@ -234,8 +234,8 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
         ) : (
           renderEmptyState()
         )}
-        </View>
-      </SafeAreaView>
+      </View>
+    </SafeAreaView>
     </LinearGradient>
   );
 };

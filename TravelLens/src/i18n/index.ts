@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const LANGUAGE_STORAGE_KEY = "@travellens_language";
 
 // 다국어 리소스
-const resources = {
+const resources: Record<string, any> = {
   ko: {
     common: {
       appName: "TravelLens",
@@ -344,6 +344,74 @@ const resources = {
         "Intenta buscar con diferentes palabras clave o toma una foto de un souvenir con la cámara.",
     },
   },
+  vi: {
+    common: {
+      appName: "TravelLens",
+      loading: "Đang tải...",
+      error: "Đã xảy ra lỗi.",
+      retry: "Thử lại",
+      cancel: "Hủy",
+      confirm: "Xác nhận",
+      back: "Quay lại",
+      next: "Tiếp tục",
+      save: "Lưu",
+      delete: "Xóa",
+    },
+    language: {
+      selectLanguage: "Chọn ngôn ngữ",
+      korean: "한국어",
+      english: "English",
+      japanese: "日本語",
+      chinese: "中文",
+      spanish: "Español",
+    },
+    camera: {
+      takePhoto: "Chụp ảnh",
+      selectFromGallery: "Chọn từ thư viện",
+      cameraPermission: "Cần cấp quyền camera.",
+      analyzing: "Đang phân tích...",
+      pointAtItem: "Hãy hướng camera vào quà lưu niệm",
+    },
+    result: {
+      title: "Kết quả phân tích",
+      name: "Tên",
+      description: "Mô tả",
+      price: "Thông tin giá",
+      category: "Danh mục",
+      usageTips: "Gợi ý sử dụng",
+      whereToBuy: "Tìm nơi mua",
+      saveToHistory: "Lưu vào lịch sử",
+      share: "Chia sẻ",
+      accuracy: "Độ chính xác",
+      tags: "Thẻ",
+    },
+    history: {
+      title: "Lịch sử tìm kiếm",
+      noHistory: "Chưa có lịch sử tìm kiếm.",
+      clearHistory: "Xóa lịch sử",
+      saved: "Đã lưu vào lịch sử.",
+    },
+    map: {
+      title: "Bản đồ cửa hàng",
+      nearbyStores: "Cửa hàng gần đây",
+      directions: "Chỉ đường",
+    },
+    favorites: {
+      added: "Đã thêm vào yêu thích.",
+      removed: "Đã xóa khỏi yêu thích.",
+      error: "Có lỗi khi xử lý yêu thích.",
+    },
+    share: {
+      comingSoon: "Tính năng chia sẻ sẽ sớm ra mắt.",
+    },
+    search: {
+      results: "Kết quả tìm kiếm",
+      foundResults: "Đã tìm thấy {{count}} kết quả",
+      noResults: "Không có kết quả",
+      noResultsDescription:
+        "Hãy thử từ khóa khác hoặc chụp ảnh quà lưu niệm để phân tích.",
+    },
+  },
 };
 
 // 현재 언어 상태
@@ -353,7 +421,7 @@ let currentLanguage: Language = "ko";
 export const initLanguage = async (): Promise<Language> => {
   try {
     const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-    const validLanguages = ["ko", "en", "ja", "zh", "es", "fr", "de", "it", "pt", "ru", "ar", "th", "vi", "id", "hi"];
+    const validLanguages = ["ko", "en", "ja", "zh", "es", "vi", "fr", "de", "it", "pt", "ru", "ar", "th", "id", "hi"];
     
     if (savedLanguage && validLanguages.includes(savedLanguage)) {
       currentLanguage = savedLanguage as Language;

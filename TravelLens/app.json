@@ -14,7 +14,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FF6B00"
+      "backgroundColor": "#E63946"
     },
     "ios": {
       "supportsTablet": true,
@@ -46,7 +46,7 @@
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FF6B00"
+        "backgroundColor": "#E63946"
       },
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json"
