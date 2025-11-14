@@ -171,11 +171,8 @@ export const useSearchLimit = () => {
   const purchaseUnlimited = useCallback(async () => {
     try {
       const user = auth.currentUser;
+      // 로그인 체크는 호출하는 쪽(HomeScreen)에서 처리
       if (!user || user.isAnonymous) {
-        Alert.alert(
-          "로그인이 필요합니다",
-          "결제를 진행하려면 로그인 후 다시 시도해주세요."
-        );
         return;
       }
 

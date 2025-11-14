@@ -180,6 +180,28 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     navigation.navigate("History");
   };
 
+  const handlePurchase = async () => {
+    if (!isLoggedIn) {
+      setPremiumModalVisible(false);
+      Alert.alert(
+        getUIText(currentLanguage, "premiumLoginRequiredTitle"),
+        getUIText(currentLanguage, "premiumLoginRequiredMessage"),
+        [
+          {
+            text: getUIText(currentLanguage, "premiumClose"),
+            style: "cancel",
+          },
+          {
+            text: getUIText(currentLanguage, "premiumLoginAction"),
+            onPress: () => navigation.navigate("Login"),
+          },
+        ]
+      );
+      return;
+    }
+    await purchaseUnlimited();
+  };
+
   return (
       <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
@@ -296,7 +318,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                   styles.modalButton,
                   isProcessingPurchase && { opacity: 0.7 },
                 ]}
-                onPress={purchaseUnlimited}
+                onPress={handlePurchase}
                 disabled={isProcessingPurchase}
               >
                 <Text style={styles.modalButtonText}>
