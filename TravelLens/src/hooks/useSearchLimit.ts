@@ -104,13 +104,12 @@ export const useSearchLimit = () => {
     const setup = async () => {
       try {
         await RNIap.initConnection();
-        if (Platform.OS === "android") {
-          await RNIap.flushFailedPurchasesCachedAsPendingAndroid();
-        }
 
         try {
-          const loadedProducts = await RNIap.getProducts(PRODUCT_IDS);
-          setProducts(loadedProducts);
+          const loadedProducts = await RNIap.fetchProducts({ productIds: PRODUCT_IDS } as any);
+          if (loadedProducts) {
+            setProducts(loadedProducts as RNIap.Product[]);
+          }
         } catch (productError) {
           console.warn("인앱 상품 불러오기 실패:", productError);
         }
@@ -185,7 +184,12 @@ export const useSearchLimit = () => {
       }
 
       const targetProduct = products.find(
-        (item) => item.productId === PRODUCT_IDS[0]
+        (item) => {
+          const productId = 'productId' in item ? item.productId : 
+                           'productIds' in item ? (item.productIds as string[])?.[0] :
+                           PRODUCT_IDS[0];
+          return productId === PRODUCT_IDS[0];
+        }
       );
 
       if (!targetProduct) {
@@ -193,14 +197,18 @@ export const useSearchLimit = () => {
         return;
       }
 
-      setIsProcessingPurchase(true);
-      const purchase = await RNIap.requestPurchase({
-        productId: targetProduct.productId,
-        offerToken: targetProduct.subscriptionOfferDetails?.[0]?.offerToken,
-        andDangerouslyFinishTransactionAutomaticallyIOS: false,
-      });
+      const productId = 'productId' in targetProduct ? targetProduct.productId :
+                       'productIds' in targetProduct ? (targetProduct.productIds as string[])?.[0] :
+                       PRODUCT_IDS[0];
 
-      if (purchase) {
+      setIsProcessingPurchase(true);
+      const purchaseResult = await RNIap.requestPurchase({ 
+        sku: productId,
+        andDangerouslyFinishTransactionAutomaticallyIOS: false,
+      } as any);
+
+      if (purchaseResult) {
+        const purchase = Array.isArray(purchaseResult) ? purchaseResult[0] : purchaseResult;
         await RNIap.finishTransaction({ purchase, isConsumable: false });
         const expiresAt = new Date(
           Date.now() + PREMIUM_DURATION_MS
@@ -209,7 +217,7 @@ export const useSearchLimit = () => {
           doc(db, "users", user.uid),
           {
             premiumPass: {
-              productId: targetProduct.productId,
+              productId: productId,
               expiresAt,
               updatedAt: new Date().toISOString(),
             },
