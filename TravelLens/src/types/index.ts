@@ -26,9 +26,13 @@ export interface Souvenir {
   description_ja: string;
   description_zh: string;
   description_es: string;
+  usage_tips_ko: string;
+  usage_tips_en: string;
+  usage_tips_ja: string;
+  usage_tips_zh: string;
+  usage_tips_es: string;
   category: Category;
   price_range: string;
-  usage_tips: string;
   image_url: string;
   tags: string[];
   created_at: string;
@@ -40,11 +44,6 @@ export interface AnalysisResult {
   souvenir: Souvenir;
   confidence: number;
   detected_tags: string[];
-  translated_content: {
-    name: string;
-    description: string;
-    usage_tips: string;
-  };
 }
 
 // 네비게이션 파라미터 (MVP)

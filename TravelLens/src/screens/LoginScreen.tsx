@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -32,6 +32,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setIsLoading(true);
       await signInWithGoogle();
+      
+      // 로그인 성공!
       Alert.alert("로그인 성공", "Google 계정으로 로그인되었습니다.", [
         {
           text: "확인",
@@ -39,7 +41,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         },
       ]);
     } catch (error: any) {
-      console.error("Google 로그인 오류:", error);
+      console.error("❌ Google 로그인 오류:", error);
       Alert.alert("로그인 실패", error.message || "Google 로그인에 실패했습니다.");
     } finally {
       setIsLoading(false);

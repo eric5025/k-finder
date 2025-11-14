@@ -13,8 +13,9 @@ import { Camera, Image, History } from "lucide-react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import * as ImagePicker from "expo-image-picker";
 import { RootStackParamList } from "../types";
-import { useTranslation } from "../hooks/useTranslation";
 import LanguageDropdown from "../components/LanguageDropdown";
+import { useLanguage } from "../contexts/LanguageContext";
+import { getUIText } from "../i18n/translations";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, "Home">;
 
@@ -24,14 +25,15 @@ interface Props {
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { currentLanguage } = useLanguage();
 
-  // 자동 번역 Hook 사용
-  const subtitle = useTranslation("한국 기념품을 촬영하고 정보를 확인하세요");
-  const takePhotoTitle = useTranslation("사진 촬영");
-  const takePhotoSubtitle = useTranslation("카메라로 기념품 촬영");
-  const selectPhotoTitle = useTranslation("갤러리 선택");
-  const selectPhotoSubtitle = useTranslation("저장된 사진 선택");
-  const footerText = useTranslation("전 세계 모든 언어 지원 | AI 분석 | 검색 기록");
+  // UI 텍스트 (현재 언어에 맞게)
+  const subtitle = getUIText(currentLanguage, "appSubtitle");
+  const takePhotoTitle = getUIText(currentLanguage, "takePhoto");
+  const takePhotoSubtitle = getUIText(currentLanguage, "takePhotoDesc");
+  const selectPhotoTitle = getUIText(currentLanguage, "selectPhoto");
+  const selectPhotoSubtitle = getUIText(currentLanguage, "selectPhotoDesc");
+  const footerText = getUIText(currentLanguage, "footer");
 
   const requestCameraPermission = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();

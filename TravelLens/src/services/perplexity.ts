@@ -34,38 +34,34 @@ export const analyzeImage = async (
             content: [
               {
                 type: "text",
-                text: `이 이미지를 분석하여 한국 기념품을 식별해주세요. 다음 JSON 형식으로 응답해주세요:
+                text: `이 이미지를 분석하여 한국 기념품을 식별해주세요. 다음 JSON 형식으로 정확히 응답해주세요 (코드블록 없이 순수 JSON만):
 {
   "souvenir": {
     "id": "고유ID",
     "name_ko": "한국어 이름",
     "name_en": "영어 이름", 
     "name_ja": "일본어 이름",
-    "name_zh": "중국어 이름",
+    "name_zh": "중국어 간체 이름",
     "name_es": "스페인어 이름",
-    "description_ko": "한국어 설명",
-    "description_en": "영어 설명",
-    "description_ja": "일본어 설명", 
-    "description_zh": "중국어 설명",
-    "description_es": "스페인어 설명",
-    "category": "food|drink|craft|clothing|beauty|other",
-    "price_range": "가격대 (예: 5,000-15,000원)",
-    "usage_tips": "사용법이나 팁",
-    "image_url": "",
-    "tags": ["태그1", "태그2", "태그3"],
-    "created_at": "2024-01-01T00:00:00Z",
-    "updated_at": "2024-01-01T00:00:00Z"
+    "description_ko": "한국어로 자세한 설명 (2-3문장)",
+    "description_en": "영어로 자세한 설명 (2-3 sentences)",
+    "description_ja": "日本語で詳細な説明 (2-3文)",
+    "description_zh": "简体中文详细说明 (2-3句)",
+    "description_es": "Descripción detallada en español (2-3 frases)",
+    "usage_tips_ko": "한국어 사용 팁 (1-2문장)",
+    "usage_tips_en": "Usage tips in English (1-2 sentences)",
+    "usage_tips_ja": "日本語の使用のヒント (1-2文)",
+    "usage_tips_zh": "简体中文使用提示 (1-2句)",
+    "usage_tips_es": "Consejos de uso en español (1-2 frases)",
+    "category": "food",
+    "price_range": "5,000-15,000",
+    "tags": ["태그1", "태그2", "태그3"]
   },
-  "confidence": 0.0-1.0,
-  "detected_tags": ["감지된 태그들"],
-  "translated_content": {
-    "name": "현재 언어로 된 이름",
-    "description": "현재 언어로 된 설명", 
-    "usage_tips": "현재 언어로 된 사용법"
-  }
+  "confidence": 0.95,
+  "detected_tags": ["감지된 태그들"]
 }
 
-이미지에서 한국 기념품, 음식, 제품 등을 정확히 식별하고 상세한 정보를 제공해주세요.`,
+중요: 순수 JSON만 응답하세요. 마크다운이나 설명 없이!`,
               },
               {
                 type: "image_url",
@@ -147,10 +143,18 @@ export const analyzeImage = async (
       description_es:
         analysis.souvenir?.description_es ||
         "Un souvenir coreano detectado en la imagen.",
+      usage_tips_ko:
+        analysis.souvenir?.usage_tips_ko || "다양한 기념품을 확인해보세요.",
+      usage_tips_en:
+        analysis.souvenir?.usage_tips_en || "Check out various souvenirs.",
+      usage_tips_ja:
+        analysis.souvenir?.usage_tips_ja || "さまざまなお土産をご確認ください。",
+      usage_tips_zh:
+        analysis.souvenir?.usage_tips_zh || "查看各种纪念品。",
+      usage_tips_es:
+        analysis.souvenir?.usage_tips_es || "Consulte varios recuerdos.",
       category: analysis.souvenir?.category || "other",
       price_range: analysis.souvenir?.price_range || "가격 정보 없음",
-      usage_tips:
-        analysis.souvenir?.usage_tips || "다양한 기념품을 확인해보세요.",
       image_url:
         analysis.souvenir?.image_url ||
         imageUrl ||
@@ -166,11 +170,6 @@ export const analyzeImage = async (
       souvenir,
       confidence: analysis.confidence || 0.7,
       detected_tags: analysis.detected_tags || ["한국", "기념품"],
-      translated_content: analysis.translated_content || {
-        name: souvenir.name_ko,
-        description: souvenir.description_ko,
-        usage_tips: souvenir.usage_tips,
-      },
     };
   } catch (error) {
     console.error("Image analysis error:", error);

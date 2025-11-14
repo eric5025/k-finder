@@ -10,6 +10,7 @@
     "privacy": "public",
     "description": "AI-powered Korean souvenir recognition app for tourists. Take a photo and instantly identify Korean souvenirs with multilingual information.",
     "scheme": "travellens",
+    "owner": "eric5025",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -22,7 +23,15 @@
       "infoPlist": {
         "NSCameraUsageDescription": "We need access to your camera to take photos of Korean souvenirs.",
         "NSPhotoLibraryUsageDescription": "We need access to your photo library to select souvenir images.",
-        "NSLocationWhenInUseUsageDescription": "We use your location to show nearby souvenir shops on the map."
+        "NSLocationWhenInUseUsageDescription": "We use your location to show nearby souvenir shops on the map.",
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.1018195924384-ua9rpjks7r4ot7b7279rj0m0281rg50v"
+            ]
+          }
+        ]
       }
     },
     "android": {
@@ -44,6 +53,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "dab25966-e38f-4d2f-b999-f8c8a86e3ee0"
+      }
     }
   }
 }

@@ -16,6 +16,7 @@ import { ArrowLeft } from "lucide-react-native";
 import { RootStackParamList, AnalysisResult } from "../types";
 import { COLORS, CATEGORIES } from "../constants";
 import { useLanguage } from "../contexts/LanguageContext";
+import { getUIText } from "../i18n/translations";
 
 type DetailScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -33,21 +34,19 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
   const { analysisResult } = route.params;
   const { currentLanguage } = useLanguage();
 
-  // 현재 언어에 맞는 텍스트 가져오기
+  // 현재 언어에 맞는 텍스트 가져오기 (AI가 이미 번역해준 필드 사용)
   const getLocalizedText = (field: string) => {
-    if (
-      analysisResult.translated_content &&
-      field in analysisResult.translated_content
-    ) {
-      return analysisResult.translated_content[
-        field as keyof typeof analysisResult.translated_content
-      ];
+    // 현재 언어 필드 (예: name_en, description_ja)
+    const key = `${field}_${currentLanguage}` as keyof typeof analysisResult.souvenir;
+    const currentLangText = analysisResult.souvenir[key];
+    
+    if (currentLangText && String(currentLangText).trim() !== "") {
+      return currentLangText;
     }
 
-    const key =
-      `${field}_${currentLanguage}` as keyof typeof analysisResult.souvenir;
+    // 폴백: 한국어
     const fallbackKey = `${field}_ko` as keyof typeof analysisResult.souvenir;
-    return analysisResult.souvenir[key] || analysisResult.souvenir[fallbackKey];
+    return analysisResult.souvenir[fallbackKey] || `${field} 정보 없음`;
   };
 
   const handleBack = () => {
@@ -64,7 +63,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>검색 결과</Text>
+          <Text style={styles.headerTitle}>{getUIText(currentLanguage, "searchResult")}</Text>
           <View style={{ width: 40 }} />
         </View>
       </LinearGradient>
@@ -97,7 +96,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
                 </Text>
               </View>
               <Text style={styles.confidenceText}>
-                정확도: {Math.round(analysisResult.confidence * 100)}%
+                {getUIText(currentLanguage, "accuracy")}: {Math.round(analysisResult.confidence * 100)}%
               </Text>
             </View>
           </View>
@@ -105,22 +104,22 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
 
         {/* Price Card */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💰 가격</Text>
+          <Text style={styles.sectionTitle}>💰 {getUIText(currentLanguage, "price")}</Text>
           <Text style={styles.priceText}>
-            {analysisResult.souvenir.price_range}
+            {getUIText(currentLanguage, "currencySymbol")} {analysisResult.souvenir.price_range}
           </Text>
         </View>
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 설명</Text>
+          <Text style={styles.sectionTitle}>📝 {getUIText(currentLanguage, "description")}</Text>
           <Text style={styles.descriptionText}>
             {getLocalizedText("description")}
           </Text>
         </View>
         {getLocalizedText("usage_tips") && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📝 사용 팁</Text>
+            <Text style={styles.sectionTitle}>💡 {getUIText(currentLanguage, "usageTips")}</Text>
             <Text style={styles.descriptionText}>
               {getLocalizedText("usage_tips")}
             </Text>
@@ -130,7 +129,7 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
         {/* Tags */}
         {analysisResult.detected_tags && analysisResult.detected_tags.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🏷️ 태그</Text>
+            <Text style={styles.sectionTitle}>🏷️ {getUIText(currentLanguage, "tags")}</Text>
             <View style={styles.tagsContainer}>
               {analysisResult.detected_tags.map((tag, index) => (
                 <View key={index} style={styles.tag}>

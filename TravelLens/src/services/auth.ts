@@ -1,81 +1,64 @@
 import {
   GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
   signInWithCredential,
-  getRedirectResult,
   signInAnonymously as firebaseSignInAnonymously,
   signOut as firebaseSignOut,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import { Platform } from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import * as Google from "expo-auth-session/providers/google";
-import { makeRedirectUri } from "expo-auth-session";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID } from "@env";
 
-// WebBrowser 완료 설정
-WebBrowser.maybeCompleteAuthSession();
+// Google Sign-In 초기화 (앱 시작 시 자동 실행)
+GoogleSignin.configure({
+  webClientId: GOOGLE_WEB_CLIENT_ID, // Firebase Web Client ID
+  iosClientId: GOOGLE_IOS_CLIENT_ID, // iOS Client ID (전용)
+  offlineAccess: true,
+});
 
-// Google OAuth 설정 (환경 변수에서 가져오기)
-// 설정 안 되어 있으면 Firebase Web UI로 폴백
-const useGoogleWebAuth = true; // 간단한 웹 기반 인증 사용
-
-// Google 로그인 (Firebase Web OAuth 사용)
+// Google 로그인 (네이티브 모듈 사용)
 export const signInWithGoogle = async () => {
   try {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({
-      prompt: "select_account",
-    });
+    console.log("🔐 Google 로그인 시작 (네이티브 방식)...");
 
-    // React Native에서는 WebBrowser로 OAuth 처리
-    if (Platform.OS !== "web") {
-      // Expo WebBrowser를 사용한 OAuth
-      const redirectUrl = makeRedirectUri({
-        scheme: "travellens",
-        path: "redirect",
-      });
+    // Google Play Services 확인
+    await GoogleSignin.hasPlayServices();
+    console.log("✓ Google Play Services 사용 가능");
 
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-        `client_id=${auth.app.options.apiKey}&` +
-        `redirect_uri=${encodeURIComponent(redirectUrl)}&` +
-        `response_type=token&` +
-        `scope=email profile`;
+    // Google 로그인 화면 표시
+    const userInfo = await GoogleSignin.signIn();
+    console.log("✓ Google 로그인 응답:", JSON.stringify(userInfo, null, 2));
 
-      const result = await WebBrowser.openAuthSessionAsync(
-        authUrl,
-        redirectUrl
-      );
+    // ID Token 가져오기
+    const idToken = (userInfo as any).data?.idToken || (userInfo as any).idToken;
 
-      if (result.type === "success" && result.url) {
-        // URL에서 토큰 추출
-        const params = new URLSearchParams(result.url.split("#")[1]);
-        const idToken = params.get("id_token");
-
-        if (idToken) {
-          const credential = GoogleAuthProvider.credential(idToken);
-          const userCredential = await signInWithCredential(auth, credential);
-          return userCredential.user;
-        }
-      }
-
-      throw new Error("Google 로그인이 취소되었거나 실패했습니다.");
-    } else {
-      // Web에서는 팝업 사용
-      const result = await signInWithPopup(auth, provider);
-      return result.user;
+    if (!idToken) {
+      throw new Error("Google ID Token을 받지 못했습니다.");
     }
+
+    console.log("✓ ID Token 획득, Firebase 인증 중...");
+
+    // Firebase 인증
+    const credential = GoogleAuthProvider.credential(idToken);
+    const userCredential = await signInWithCredential(auth, credential);
+
+    console.log("✓ Firebase 로그인 완료:", userCredential.user.uid);
+
+    return userCredential.user;
   } catch (error: any) {
-    console.error("Google 로그인 오류:", error);
-    
-    // Firebase에서 Google 활성화 안 된 경우
+    console.error("❌ Google 로그인 오류:", error);
+
     if (error.code === "auth/operation-not-allowed") {
       throw new Error(
         "Google 로그인이 활성화되지 않았습니다.\n\n" +
-        "Firebase Console → Authentication → 로그인 방법에서 Google을 활성화하세요."
+          "Firebase Console → Authentication → 로그인 방법에서 Google을 활성화하세요."
       );
     }
-    
+
+    // 사용자가 로그인 취소한 경우
+    if (error.code === "-5") {
+      throw new Error("로그인이 취소되었습니다.");
+    }
+
     throw error;
   }
 };
