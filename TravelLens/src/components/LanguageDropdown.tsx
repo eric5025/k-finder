@@ -37,6 +37,10 @@ const LanguageDropdown: React.FC = () => {
     SUPPORTED_LANGUAGES.find((lang) => lang.code === currentLanguage)
       ?.nativeName || "한국어";
 
+  const currentLangFlag =
+    SUPPORTED_LANGUAGES.find((lang) => lang.code === currentLanguage)
+      ?.flag || "🌍";
+
   const handleLanguageSelect = async (langCode: string) => {
     await setLanguage(langCode);
     setIsVisible(false);
@@ -48,7 +52,7 @@ const LanguageDropdown: React.FC = () => {
         style={styles.dropdownButton}
         onPress={() => setIsVisible(true)}
       >
-        <Text style={styles.dropdownText}>{currentLangName}</Text>
+        <Text style={styles.dropdownText}>{currentLangFlag} {currentLangName}</Text>
         <ChevronDown size={16} color="white" />
       </TouchableOpacity>
 
@@ -97,8 +101,10 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    backgroundColor: "rgba(255, 255, 255, 0.15)",
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   dropdownText: {
     color: "white",
@@ -135,7 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   languageItemActive: {
-    backgroundColor: "#FFF5F0",
+    backgroundColor: "#FFE5E5",
   },
   languageFlag: {
     fontSize: 24,
@@ -147,7 +153,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 18,
-    color: "#FF6B00",
+    color: "#E63946",
     fontWeight: "bold",
   },
 });

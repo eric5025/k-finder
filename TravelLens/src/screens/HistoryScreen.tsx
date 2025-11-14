@@ -26,6 +26,8 @@ import {
   clearSearchHistory,
   SearchHistoryItem,
 } from "../services/searchHistory";
+import { getUIText } from "../i18n/translations";
+import { useLanguage } from "../contexts/LanguageContext";
 
 type HistoryScreenNavigationProp = StackNavigationProp<
   RootStackParamList,
@@ -39,6 +41,7 @@ interface Props {
 const HistoryScreen: React.FC<Props> = ({ navigation }) => {
   const [historyData, setHistoryData] = useState<SearchHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { currentLanguage } = useLanguage();
 
   // 검색 기록 로드
   useEffect(() => {
@@ -49,6 +52,8 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
     try {
       setIsLoading(true);
       const history = await getSearchHistory(20);
+      console.log("📝 로드된 히스토리:", history);
+      console.log("📝 첫 번째 아이템:", history[0]);
       setHistoryData(history);
     } catch (error) {
       console.error("검색 기록 로드 오류:", error);
@@ -165,6 +170,9 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.itemName} numberOfLines={1}>
             {item.query || "기념품"}
           </Text>
+          <Text style={styles.itemPrice} numberOfLines={1}>
+            ₩ {item.price || "가격 정보 없음"}
+          </Text>
           <View style={styles.itemTime}>
             <Clock size={12} color={COLORS.textSecondary} />
             <Text style={styles.itemTimeText}>
@@ -193,11 +201,12 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
-      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.header}>
+        {/* Header */}
+        <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="white" />
@@ -225,54 +234,63 @@ const HistoryScreen: React.FC<Props> = ({ navigation }) => {
         ) : (
           renderEmptyState()
         )}
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
   },
   header: {
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   headerContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   backButton: {
     padding: 8,
+    borderRadius: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "white",
+    letterSpacing: 0.3,
   },
   clearButton: {
     padding: 8,
+    borderRadius: 8,
   },
   clearButtonText: {
-    fontSize: 14,
-    color: "white",
-    fontWeight: "500",
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.9)",
+    fontWeight: "600",
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    backgroundColor: "#F9F9F9",
   },
   listContainer: {
-    paddingTop: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
   historyItem: {
     backgroundColor: "white",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -281,9 +299,9 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
   itemLeft: {
     flexDirection: "row",
@@ -291,45 +309,52 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageContainer: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
     borderRadius: 12,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "#FFE5E5",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
     overflow: "hidden",
   },
   historyImage: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
   },
   itemInfo: {
     flex: 1,
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 15,
+    fontWeight: "700",
     color: COLORS.text,
     marginBottom: 4,
   },
-  itemCategory: {
-    fontSize: 14,
+  itemPrice: {
+    fontSize: 13,
     color: COLORS.primary,
-    fontWeight: "500",
+    fontWeight: "700",
     marginBottom: 4,
+  },
+  itemCategory: {
+    fontSize: 13,
+    color: COLORS.primary,
+    fontWeight: "600",
+    marginBottom: 3,
   },
   itemTime: {
     flexDirection: "row",
     alignItems: "center",
   },
   itemTimeText: {
-    fontSize: 12,
+    fontSize: 11,
     color: COLORS.textSecondary,
     marginLeft: 4,
   },
   deleteButton: {
     padding: 8,
+    borderRadius: 8,
   },
   emptyState: {
     flex: 1,

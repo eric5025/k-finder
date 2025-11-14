@@ -16,13 +16,15 @@ export interface SearchHistoryItem {
   query: string;
   timestamp: Date;
   imageUrl?: string;
+  price?: string;
   results: Souvenir[];
 }
 
 export const addSearchHistory = async (
   query: string,
   imageUrl?: string,
-  results: Souvenir[] = []
+  results: Souvenir[] = [],
+  price?: string
 ) => {
   try {
     const user = auth.currentUser;
@@ -34,6 +36,7 @@ export const addSearchHistory = async (
         query,
         timestamp: new Date(),
         imageUrl,
+        price,
         results,
       });
     } else {
@@ -43,6 +46,7 @@ export const addSearchHistory = async (
         query,
         timestamp: new Date(),
         imageUrl,
+        price,
         results,
         deviceId: "anonymous", // 나중에 디바이스 ID로 구분할 수 있음
       });

@@ -147,10 +147,13 @@ const LoadingScreen: React.FC<Props> = ({ navigation, route }) => {
         },
       };
 
-      // 검색 기록 추가
-      await addSearchHistory(analysisResult.souvenir.name_ko, imageUri, [
-        finalResult.souvenir,
-      ]);
+      // 검색 기록 추가 (가격 정보 포함)
+      await addSearchHistory(
+        analysisResult.souvenir.name_ko,
+        imageUri,
+        [finalResult.souvenir],
+        analysisResult.souvenir.price_range
+      );
 
       // 상세 화면으로 이동
       setTimeout(() => {
@@ -182,47 +185,33 @@ const LoadingScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.gradient}>
+    <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <View style={styles.content}>
-          {/* Progress Circle */}
-          <View style={styles.progressContainer}>
-            <View style={styles.progressCircle}>
-              <ActivityIndicator size="large" color="white" />
-              <Text style={styles.progressText}>{progress}%</Text>
-            </View>
+          {/* Loader */}
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size={50} color="white" />
           </View>
 
           {/* Status Text */}
-          <View style={styles.statusContainer}>
-            <Text style={styles.statusText}>{status}{dots}</Text>
-            <Text style={styles.subStatusText}>
-              {progress < 90 
-                ? getUIText(currentLanguage, "analyzing") 
-                : getUIText(currentLanguage, "almostDone")}
-            </Text>
-          </View>
+          <Text style={styles.statusText}>{status}{dots}</Text>
 
-          {/* Loading Animation */}
-          <View style={styles.animationContainer}>
-            <View style={styles.dotContainer}>
-              {[0, 1, 2].map((index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    {
-                      opacity: progress > (index + 1) * 30 ? 1 : 0.3,
-                    },
-                  ]}
-                />
-              ))}
+          {/* Progress Bar */}
+          <View style={styles.progressBarContainer}>
+            <View style={styles.progressBar}>
+              <View 
+                style={[
+                  styles.progressFill,
+                  { width: `${progress}%` }
+                ]}
+              />
             </View>
+            <Text style={styles.progressText}>{progress}%</Text>
           </View>
         </View>
-      </LinearGradient>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -239,54 +228,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 40,
   },
-  progressContainer: {
-    marginBottom: 60,
-  },
-  progressCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 3,
-    borderColor: "rgba(255, 255, 255, 0.3)",
-  },
-  progressText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-    marginTop: 8,
-  },
-  statusContainer: {
-    alignItems: "center",
-    marginBottom: 60,
+  loaderContainer: {
+    marginBottom: 40,
   },
   statusText: {
     fontSize: 20,
     fontWeight: "600",
     color: "white",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 40,
+    opacity: 0.95,
   },
-  subStatusText: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.7)",
-    textAlign: "center",
-  },
-  animationContainer: {
+  progressBarContainer: {
+    width: "100%",
     alignItems: "center",
   },
-  dotContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
+  progressBar: {
+    width: "100%",
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "rgba(255, 255, 255, 0.25)",
+    marginBottom: 12,
+    overflow: "hidden",
   },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  progressFill: {
+    height: "100%",
     backgroundColor: "white",
-    marginHorizontal: 4,
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "rgba(255, 255, 255, 0.9)",
   },
 });
 

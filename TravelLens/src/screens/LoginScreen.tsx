@@ -65,16 +65,15 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.gradient}>
+    <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <View style={styles.content}>
           {/* Header */}
           <View style={styles.header}>
-            <LogIn size={60} color="white" />
-            <Text style={styles.title}>TravelLens</Text>
+            <Text style={styles.title}>Korea Finder</Text>
             <Text style={styles.subtitle}>
-              한국 기념품을 찾는 가장 쉬운 방법
+              한국 기념품을 살땐? Korea Finder!
             </Text>
           </View>
 
@@ -114,12 +113,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             <View style={styles.benefitItem}>
               <Text style={styles.benefitIcon}>✓</Text>
-              <Text style={styles.benefitText}>모든 기기에서 동기화</Text>
+              <Text style={styles.benefitText}>유료 결제 가능</Text>
             </View>
           </View>
         </View>
-      </LinearGradient>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
@@ -133,86 +132,90 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: "space-between",
-    padding: 20,
-    paddingTop: 60,
-    paddingBottom: 40,
+    padding: 24,
+    paddingTop: 40,
+    paddingBottom: 32,
   },
   header: {
     alignItems: "center",
-    marginTop: 20,
+    marginTop: 16,
   },
   title: {
-    fontSize: 36,
-    fontWeight: "bold",
+    fontSize: 40,
+    fontWeight: "700",
     color: "white",
-    marginTop: 20,
-    marginBottom: 10,
+    marginTop: 24,
+    marginBottom: 12,
+    letterSpacing: 0.5,
   },
   subtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 15,
+    color: "rgba(255, 255, 255, 0.85)",
     textAlign: "center",
+    lineHeight: 22,
   },
   loginContainer: {
-    gap: 16,
+    gap: 12,
   },
   loginButton: {
     backgroundColor: "white",
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 4,
   },
   buttonContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
+    gap: 10,
   },
   buttonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FF6B00",
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#E63946",
   },
   loadingContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
-    marginTop: 10,
+    gap: 8,
+    marginTop: 8,
   },
   loadingText: {
     color: "white",
-    fontSize: 14,
+    fontSize: 13,
   },
   skipButton: {
     alignSelf: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   skipText: {
-    color: "white",
-    fontSize: 16,
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 15,
     fontWeight: "500",
-    textDecorationLine: "underline",
   },
   benefitsContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   benefitsTitle: {
     color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 10,
+    letterSpacing: 0.3,
   },
   benefitItem: {
     flexDirection: "row",
@@ -220,13 +223,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   benefitIcon: {
-    color: "white",
-    fontSize: 18,
+    color: "#FFD89B",
+    fontSize: 16,
     marginRight: 10,
+    fontWeight: "bold",
   },
   benefitText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.85)",
+    fontSize: 13,
   },
 });
 

@@ -23,19 +23,20 @@ export const CATEGORIES = {
   other: { name: "기타", icon: "🎁" },
 };
 
-// 색상 테마 - Tax Refund 스타일 🧡
+// 색상 테마 - 붉은 계열 🔴
 export const COLORS = {
-  primary: "#FF6B00",      // 택스 리펀 주황색
-  secondary: "#FF8C00",    // 밝은 주황색
-  accent: "#FFB347",       // 부드러운 주황색
+  primary: "#E63946",      // 진한 빨강
+  secondary: "#F77F88",    // 밝은 빨강
+  accent: "#FB8B89",       // 부드러운 빨강
   background: "#FFFFFF",
-  surface: "#FFF5E6",      // 연한 주황 배경
+  surface: "#FFE5E5",      // 연한 빨강 배경
   text: "#1F2937",
   textSecondary: "#6B7280",
-  border: "#FFD4A3",       // 주황 계열 테두리
+  border: "#F4A9A8",       // 빨강 계열 테두리
   error: "#EF4444",
-  warning: "#FF6B00",      // 주황색으로 통일
+  warning: "#E63946",      // 빨강색으로 통일
   success: "#10B981",
+  normal: "#000000",
 };
 
 // API 설정

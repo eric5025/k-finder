@@ -54,11 +54,12 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+    <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
-      <LinearGradient colors={["#FF6B00", "#FF8C00"]} style={styles.header}>
+        {/* Header */}
+        <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <ArrowLeft size={24} color="white" />
@@ -139,33 +140,40 @@ const DetailScreen: React.FC<Props> = ({ navigation, route }) => {
             </View>
           </View>
         )}
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
+  gradient: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#F9F9F9",
   },
   header: {
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
   headerContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   backButton: {
     padding: 8,
+    borderRadius: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "white",
+    letterSpacing: 0.3,
   },
   content: {
     flex: 1,
@@ -174,23 +182,23 @@ const styles = StyleSheet.create({
   productCard: {
     backgroundColor: "white",
     borderRadius: 16,
-    padding: 20,
-    marginTop: 20,
-    marginBottom: 16,
+    padding: 18,
+    marginTop: 18,
+    marginBottom: 14,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   },
   productHeader: {
     flexDirection: "row",
   },
   productImageContainer: {
-    marginRight: 16,
+    marginRight: 14,
   },
   productImage: {
     width: 100,
@@ -201,7 +209,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 12,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: "#FFE5E5",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -210,10 +218,11 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     flex: 1,
+    justifyContent: "center",
   },
   productName: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "700",
     color: COLORS.text,
     marginBottom: 8,
   },
@@ -221,9 +230,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   categoryText: {
-    fontSize: 14,
+    fontSize: 15,
     color: COLORS.primary,
-    fontWeight: "600",
+    fontWeight: "700",
   },
   confidenceText: {
     fontSize: 12,
@@ -232,31 +241,31 @@ const styles = StyleSheet.create({
   },
   section: {
     backgroundColor: "white",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 14,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.08,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: "700",
     color: COLORS.text,
     marginBottom: 12,
   },
   priceText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.primary,
+    fontWeight: "700",
+    color: COLORS.normal,
   },
   descriptionText: {
-    fontSize: 14,
+    fontSize: 16,
     color: COLORS.text,
     lineHeight: 20,
   },
@@ -265,7 +274,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   tag: {
-    backgroundColor: "#FFF5E6",
+    backgroundColor: "#FFE5E5",
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 6,
@@ -277,7 +286,7 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 12,
     color: COLORS.primary,
-    fontWeight: "500",
+    fontWeight: "600",
   },
 });
 

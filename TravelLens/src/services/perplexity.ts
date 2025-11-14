@@ -53,8 +53,8 @@ export const analyzeImage = async (
     "usage_tips_ja": "日本語の使用のヒント (1-2文)",
     "usage_tips_zh": "简体中文使用提示 (1-2句)",
     "usage_tips_es": "Consejos de uso en español (1-2 frases)",
-    "category": "food",
-    "price_range": "5,000-15,000",
+    "category": "카테고리 (food, fashion, accessory, etc.)",
+    "price_range": "평균가격 (원)",
     "tags": ["태그1", "태그2", "태그3"]
   },
   "confidence": 0.95,
