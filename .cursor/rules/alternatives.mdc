@@ -1,0 +1,407 @@
+---
+description: Better alternatives and modern practices
+globs: **/*.ts, **/*.tsx
+alwaysApply: true
+---
+
+# Better Alternatives & Modern Practices
+
+## 더 나은 API 선택
+
+### Fetch vs Axios vs React Query
+```typescript
+// ❌ AVOID - 기본 fetch (에러 처리, 캐싱 등 수동)
+const data = await fetch(url).then(r => r.json());
+
+// ✅ GOOD - Axios (timeout, interceptor 등)
+const { data } = await axios.get(url, { timeout: 5000 });
+
+// ✅ BEST - React Query (캐싱, 자동 재시도, 최적화)
+import { useQuery } from '@tanstack/react-query';
+
+const { data, isLoading, error } = useQuery({
+  queryKey: ['user', userId],
+  queryFn: () => fetchUser(userId),
+  staleTime: 5 * 60 * 1000, // 5분간 캐시
+  retry: 3
+});
+```
+
+## 상태 관리 라이브러리
+
+### Context vs Zustand vs Redux
+```typescript
+// 작은 앱 (간단한 상태)
+// ✅ Context API 충분
+
+// 중간 앱 (복잡한 상태, 여러 컴포넌트)
+// ✅ BEST - Zustand (간단하고 빠름)
+import { create } from 'zustand';
+
+const useStore = create((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+  logout: () => set({ user: null })
+}));
+
+// 대규모 앱 (복잡한 비즈니스 로직)
+// ✅ Redux Toolkit
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+
+const userSlice = createSlice({
+  name: 'user',
+  initialState: { data: null },
+  reducers: {
+    setUser: (state, action) => {
+      state.data = action.payload;
+    }
+  }
+});
+```
+
+## 날짜 처리
+
+### Date vs Day.js vs date-fns
+```typescript
+// ❌ AVOID - 네이티브 Date (복잡하고 버그 많음)
+const date = new Date();
+date.setDate(date.getDate() + 7);
+
+// ✅ GOOD - date-fns (트리 쉐이킹 가능, 작은 번들)
+import { addDays, format } from 'date-fns';
+const nextWeek = addDays(new Date(), 7);
+const formatted = format(nextWeek, 'yyyy-MM-dd');
+
+// ✅ ALTERNATIVE - Day.js (Moment.js 대체, 작은 크기)
+import dayjs from 'dayjs';
+const nextWeek = dayjs().add(7, 'day').format('YYYY-MM-DD');
+```
+
+## 폼 처리
+
+### 수동 vs React Hook Form
+```typescript
+// ❌ DON'T - 수동 상태 관리 (복잡함)
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+const [errors, setErrors] = useState({});
+
+const handleSubmit = () => {
+  const newErrors = {};
+  if (!email) newErrors.email = 'Required';
+  if (!password) newErrors.password = 'Required';
+  setErrors(newErrors);
+};
+
+// ✅ DO - React Hook Form (성능, 검증, 간편)
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8)
+});
+
+const { register, handleSubmit, formState: { errors } } = useForm({
+  resolver: zodResolver(schema)
+});
+
+const onSubmit = handleSubmit((data) => {
+  // 자동으로 검증된 데이터
+});
+```
+
+## 애니메이션
+
+### Animated API vs Reanimated
+```typescript
+// ❌ AVOID - Animated API (JS 스레드, 느림)
+const fadeAnim = useRef(new Animated.Value(0)).current;
+Animated.timing(fadeAnim, {
+  toValue: 1,
+  duration: 300,
+  useNativeDriver: true
+}).start();
+
+// ✅ BEST - Reanimated v3 (UI 스레드, 빠름, 부드러움)
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle,
+  withTiming,
+  withSpring
+} from 'react-native-reanimated';
+
+const opacity = useSharedValue(0);
+
+const animatedStyle = useAnimatedStyle(() => ({
+  opacity: withTiming(opacity.value, { duration: 300 })
+}));
+
+useEffect(() => {
+  opacity.value = 1;
+}, []);
+
+<Animated.View style={animatedStyle} />
+```
+
+## 네비게이션
+
+### React Navigation 최적화
+```typescript
+// ✅ DO - Screen lazy loading
+import { lazy } from 'react';
+
+const HomeScreen = lazy(() => import('./screens/HomeScreen'));
+const DetailScreen = lazy(() => import('./screens/DetailScreen'));
+
+// ✅ DO - Optimized re-rendering
+const navigation = useNavigation();
+const route = useRoute();
+
+// ❌ DON'T - 매번 새 함수 생성
+<Button onPress={() => navigation.navigate('Detail')} />
+
+// ✅ DO - useCallback으로 메모이제이션
+const handleNavigate = useCallback(() => {
+  navigation.navigate('Detail', { id });
+}, [id]);
+
+<Button onPress={handleNavigate} />
+```
+
+## 타입 검증
+
+### PropTypes vs TypeScript vs Zod
+```typescript
+// ❌ AVOID - PropTypes (런타임만 체크, 타입 추론 없음)
+import PropTypes from 'prop-types';
+
+Component.propTypes = {
+  name: PropTypes.string.isRequired
+};
+
+// ✅ GOOD - TypeScript (컴파일 타임 체크)
+interface Props {
+  name: string;
+  age?: number;
+}
+
+function Component({ name, age }: Props) {
+  // ...
+}
+
+// ✅ BEST - Zod (런타임 + 타입 추론 + 스키마 재사용)
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  age: z.number().min(0).optional()
+});
+
+type User = z.infer<typeof UserSchema>;
+
+// API 응답 검증
+try {
+  const user = UserSchema.parse(apiResponse);
+  // user는 타입 안전!
+} catch (error) {
+  // 검증 실패
+}
+```
+
+## 환경 변수
+
+### 하드코딩 vs .env vs Config
+```typescript
+// ❌ DON'T - 하드코딩
+const API_URL = 'https://api.example.com';
+const API_KEY = 'sk-1234567890';
+
+// ✅ GOOD - .env
+import { API_URL } from '@env';
+
+// ✅ BEST - Config 파일 (타입 안전 + 검증)
+// config/index.ts
+import { z } from 'zod';
+
+const envSchema = z.object({
+  API_URL: z.string().url(),
+  API_KEY: z.string().min(1),
+  ENVIRONMENT: z.enum(['development', 'staging', 'production'])
+});
+
+export const config = envSchema.parse({
+  API_URL: process.env.API_URL,
+  API_KEY: process.env.API_KEY,
+  ENVIRONMENT: process.env.NODE_ENV
+});
+
+// 사용
+import { config } from './config';
+const response = await fetch(config.API_URL);
+```
+
+## 에러 바운더리
+
+### 기본 vs react-error-boundary
+```typescript
+// ❌ DON'T - 에러 바운더리 없이 (앱 전체 크래시)
+<App />
+
+// ✅ DO - 에러 바운더리로 앱 크래시 방지
+import { ErrorBoundary } from 'react-error-boundary';
+
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Something went wrong</Text>
+      <Text style={styles.error}>{error.message}</Text>
+      <Button onPress={resetErrorBoundary}>Try again</Button>
+    </View>
+  );
+}
+
+<ErrorBoundary 
+  FallbackComponent={ErrorFallback}
+  onError={(error, errorInfo) => {
+    // 로깅 서비스로 전송
+    logErrorToService(error, errorInfo);
+  }}
+>
+  <App />
+</ErrorBoundary>
+```
+
+## 스타일링
+
+### StyleSheet vs Styled Components vs NativeWind
+```typescript
+// ✅ GOOD - StyleSheet (기본, 성능 좋음)
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16
+  }
+});
+
+// ✅ ALTERNATIVE - Styled Components (CSS-in-JS)
+import styled from 'styled-components/native';
+
+const Container = styled.View`
+  flex: 1;
+  padding: 16px;
+`;
+
+// ✅ BEST FOR RAPID DEV - NativeWind (Tailwind for RN)
+import { View, Text } from 'react-native';
+
+<View className="flex-1 p-4 bg-white">
+  <Text className="text-lg font-bold">Hello</Text>
+</View>
+```
+
+## 데이터 페칭 패턴
+
+### useEffect vs SWR vs React Query
+```typescript
+// ❌ AVOID - 수동 useEffect (복잡, 에러 처리 수동)
+const [data, setData] = useState(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState(null);
+
+useEffect(() => {
+  setLoading(true);
+  fetch(url)
+    .then(r => r.json())
+    .then(setData)
+    .catch(setError)
+    .finally(() => setLoading(false));
+}, [url]);
+
+// ✅ GOOD - SWR (간단한 캐싱)
+import useSWR from 'swr';
+
+const { data, error, isLoading } = useSWR('/api/user', fetcher);
+
+// ✅ BEST - React Query (완전한 기능)
+import { useQuery, useMutation } from '@tanstack/react-query';
+
+const { data, isLoading, error, refetch } = useQuery({
+  queryKey: ['user', userId],
+  queryFn: () => fetchUser(userId),
+  staleTime: 5 * 60 * 1000,
+  cacheTime: 10 * 60 * 1000,
+  retry: 3,
+  refetchOnWindowFocus: false
+});
+
+// Mutation
+const mutation = useMutation({
+  mutationFn: updateUser,
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['user'] });
+  }
+});
+```
+
+## 유틸리티 라이브러리
+
+### Lodash vs Modern JS
+```typescript
+// ❌ AVOID - 불필요한 Lodash (네이티브로 가능)
+import { map, filter, find } from 'lodash';
+
+const result = map(filter(data, item => item.active), item => item.name);
+
+// ✅ DO - 네이티브 JS (번들 크기 감소)
+const result = data
+  .filter(item => item.active)
+  .map(item => item.name);
+
+// ✅ USE LODASH FOR - 복잡한 유틸리티
+import debounce from 'lodash/debounce'; // 개별 import!
+import cloneDeep from 'lodash/cloneDeep';
+import merge from 'lodash/merge';
+```
+
+## HTTP 클라이언트
+
+### Fetch vs Axios vs ky
+```typescript
+// ❌ BASIC - fetch (에러 처리 수동)
+const response = await fetch(url);
+if (!response.ok) throw new Error('Failed');
+const data = await response.json();
+
+// ✅ GOOD - Axios (interceptor, timeout 등)
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'https://api.example.com',
+  timeout: 5000
+});
+
+api.interceptors.request.use(config => {
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+// ✅ MODERN - ky (작고 현대적)
+import ky from 'ky';
+
+const api = ky.create({
+  prefixUrl: 'https://api.example.com',
+  timeout: 5000,
+  hooks: {
+    beforeRequest: [
+      request => {
+        request.headers.set('Authorization', `Bearer ${token}`);
+      }
+    ]
+  }
+});
+
+const data = await api.get('users').json();
+```

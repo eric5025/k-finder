@@ -2,7 +2,7 @@
 export const UI_TEXTS = {
   ko: {
     // 홈 화면
-    appSubtitle: "한국 기념품을 촬영하고 정보를 확인하세요",
+    appSubtitle: "뭔지모를땐? 무엇이든 찾아줘!",
     takePhoto: "사진 촬영",
     takePhotoDesc: "카메라로 기념품 촬영",
     selectPhoto: "갤러리 선택",

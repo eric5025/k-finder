@@ -1,0 +1,393 @@
+---
+description: Security best practices and vulnerability prevention
+globs: **/*.ts, **/*.tsx
+alwaysApply: true
+---
+
+# Security Best Practices
+
+## API 키 & 민감 정보
+
+### 절대 하드코딩 금지
+```typescript
+// ❌ NEVER - 절대 금지! (Git에 노출됨)
+const API_KEY = 'sk-1234567890abcdef';
+const PASSWORD = 'mypassword123';
+const DATABASE_URL = 'postgresql://user:pass@host/db';
+
+// ✅ DO - 환경 변수 사용
+import { API_KEY } from '@env';
+
+// ✅ DO - Secure Storage 사용 (모바일)
+import * as SecureStore from 'expo-secure-store';
+
+await SecureStore.setItemAsync('token', userToken);
+const token = await SecureStore.getItemAsync('token');
+
+// ✅ DO - Keychain/Keystore 사용
+import * as Keychain from 'react-native-keychain';
+
+await Keychain.setGenericPassword('username', 'password');
+const credentials = await Keychain.getGenericPassword();
+```
+
+### .env 파일 관리
+```bash
+# ✅ DO - .gitignore에 추가
+.env
+.env.local
+.env.production
+
+# ✅ DO - .env.example 제공
+API_KEY=your_api_key_here
+DATABASE_URL=your_db_url_here
+```
+
+## XSS (Cross-Site Scripting) 방지
+
+### 사용자 입력 처리
+```typescript
+// ❌ DON'T - dangerouslySetInnerHTML 사용
+<div dangerouslySetInnerHTML={{ __html: userInput }} />
+
+// ✅ DO - 항상 이스케이프
+import DOMPurify from 'dompurify';
+
+const cleanHTML = DOMPurify.sanitize(userInput, {
+  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a'],
+  ALLOWED_ATTR: ['href']
+});
+
+<div dangerouslySetInnerHTML={{ __html: cleanHTML }} />
+
+// ✅ BETTER - 텍스트로 렌더링 (React는 자동 이스케이프)
+<Text>{userInput}</Text>
+```
+
+## SQL Injection 방지
+
+### 데이터베이스 쿼리
+```typescript
+// ❌ DON'T - 문자열 연결 (SQL Injection 취약)
+const query = `SELECT * FROM users WHERE name = '${userName}'`;
+db.query(query);
+
+// ✅ DO - Prepared Statement / Parameterized Query
+const query = 'SELECT * FROM users WHERE name = ?';
+db.query(query, [userName]);
+
+// ✅ DO - ORM 사용 (Prisma)
+const user = await prisma.user.findUnique({
+  where: { name: userName }
+});
+
+// ✅ DO - Firebase (자동으로 안전)
+const userDoc = await db
+  .collection('users')
+  .where('name', '==', userName)
+  .get();
+```
+
+## 인증 & 토큰 보안
+
+### JWT 토큰 관리
+```typescript
+// ❌ DON'T - localStorage에 JWT 저장 (XSS 취약)
+localStorage.setItem('token', jwtToken);
+
+// ✅ DO - httpOnly 쿠키 (웹)
+// 서버에서 설정:
+res.cookie('token', jwtToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  maxAge: 3600000
+});
+
+// ✅ DO - Secure Storage (모바일)
+import * as SecureStore from 'expo-secure-store';
+
+await SecureStore.setItemAsync('accessToken', token);
+await SecureStore.setItemAsync('refreshToken', refreshToken);
+await SecureStore.setItemAsync('expiresAt', expiresAt.toString());
+
+// ✅ DO - 토큰 만료 체크 & 자동 갱신
+async function getAuthHeaders() {
+  const token = await SecureStore.getItemAsync('accessToken');
+  const expiresAt = await SecureStore.getItemAsync('expiresAt');
+  
+  if (Date.now() >= Number(expiresAt)) {
+    const refreshToken = await SecureStore.getItemAsync('refreshToken');
+    const newToken = await refreshAccessToken(refreshToken);
+    
+    await SecureStore.setItemAsync('accessToken', newToken.access);
+    await SecureStore.setItemAsync('expiresAt', newToken.expiresAt);
+    
+    return {
+      Authorization: `Bearer ${newToken.access}`
+    };
+  }
+  
+  return {
+    Authorization: `Bearer ${token}`
+  };
+}
+```
+
+## 입력 검증 (Validation)
+
+### 클라이언트 + 서버 양쪽 검증
+```typescript
+// ✅ DO - Zod로 스키마 정의 및 검증
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .email('Invalid email')
+    .max(255, 'Email too long'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(100, 'Password too long')
+    .regex(/[A-Z]/, 'Must contain uppercase')
+    .regex(/[a-z]/, 'Must contain lowercase')
+    .regex(/[0-9]/, 'Must contain number')
+});
+
+// 클라이언트에서 검증
+function validateLogin(input: unknown) {
+  try {
+    return loginSchema.parse(input);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      throw new Error(error.errors[0].message);
+    }
+    throw error;
+  }
+}
+
+// ✅ DO - 서버에서도 동일하게 검증
+// 클라이언트 검증은 우회 가능하므로 서버 검증 필수!
+```
+
+### 파일 업로드 검증
+```typescript
+// ✅ DO - 파일 타입, 크기 검증
+const fileSchema = z.object({
+  type: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+  size: z.number().max(5 * 1024 * 1024, 'File too large (max 5MB)')
+});
+
+async function validateFile(file: File) {
+  fileSchema.parse({
+    type: file.type,
+    size: file.size
+  });
+  
+  // 추가: Magic number 확인 (실제 파일 형식 검증)
+  const buffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  const isJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8;
+  const isPNG = bytes[0] === 0x89 && bytes[1] === 0x50;
+  
+  if (!isJPEG && !isPNG) {
+    throw new Error('Invalid file format');
+  }
+}
+```
+
+## HTTPS & 네트워크 보안
+
+### API 통신
+```typescript
+// ❌ DON'T - HTTP 사용
+const API_URL = 'http://api.example.com';
+
+// ✅ DO - HTTPS 강제
+const API_URL = 'https://api.example.com';
+
+// ✅ DO - Certificate Pinning (고급)
+import { NetworkSecurityConfig } from 'react-native-ssl-pinning';
+
+const response = await fetch(url, {
+  method: 'GET',
+  sslPinning: {
+    certs: ['certificate_name']
+  }
+});
+```
+
+## 민감한 데이터 로깅 방지
+
+```typescript
+// ❌ DON'T - 민감한 정보 로깅
+console.log('User password:', password);
+console.log('API Key:', apiKey);
+console.log('Credit card:', creditCard);
+
+// ✅ DO - 민감한 정보 마스킹
+function maskSensitiveData(data: string) {
+  return data.replace(/./g, '*');
+}
+
+console.log('User password:', maskSensitiveData(password));
+
+// ✅ DO - 프로덕션에서 로그 제거
+if (__DEV__) {
+  console.log('Debug info:', data);
+}
+
+// ✅ BEST - 로깅 유틸리티 사용
+import * as Sentry from '@sentry/react-native';
+
+Sentry.captureException(error, {
+  level: 'error',
+  // 민감한 데이터 필터링
+  beforeSend(event) {
+    if (event.request?.data?.password) {
+      delete event.request.data.password;
+    }
+    return event;
+  }
+});
+```
+
+## 권한 체크
+
+### API 권한 검증
+```typescript
+// ✅ DO - 서버에서 권한 체크 (클라이언트 체크는 불충분)
+async function deleteUser(userId: string, requestingUserId: string) {
+  // 권한 검증
+  const user = await prisma.user.findUnique({
+    where: { id: requestingUserId }
+  });
+  
+  if (!user?.isAdmin && userId !== requestingUserId) {
+    throw new Error('Unauthorized');
+  }
+  
+  await prisma.user.delete({ where: { id: userId } });
+}
+
+// ✅ DO - Role-Based Access Control (RBAC)
+enum Role {
+  USER = 'user',
+  ADMIN = 'admin',
+  MODERATOR = 'moderator'
+}
+
+function requireRole(allowedRoles: Role[]) {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    next();
+  };
+}
+```
+
+## 레이트 리미팅 (Rate Limiting)
+
+```typescript
+// ✅ DO - API 호출 제한
+import rateLimit from 'express-rate-limit';
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15분
+  max: 100, // 최대 100개 요청
+  message: 'Too many requests, please try again later.'
+});
+
+app.use('/api/', limiter);
+
+// ✅ DO - 로그인 시도 제한 (Brute Force 방지)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // 15분에 5번만
+  skipSuccessfulRequests: true
+});
+
+app.post('/api/login', loginLimiter, loginHandler);
+```
+
+## CORS 설정
+
+```typescript
+// ❌ DON'T - 모든 오리진 허용
+app.use(cors({ origin: '*' }));
+
+// ✅ DO - 특정 오리진만 허용
+app.use(cors({
+  origin: ['https://myapp.com', 'https://www.myapp.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+```
+
+## 비밀번호 보안
+
+```typescript
+// ❌ DON'T - 평문 저장
+await db.users.create({
+  email,
+  password: password // 절대 안됨!
+});
+
+// ✅ DO - bcrypt로 해싱
+import bcrypt from 'bcrypt';
+
+const saltRounds = 12;
+const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+await db.users.create({
+  email,
+  password: hashedPassword
+});
+
+// 로그인 시 검증
+const isValid = await bcrypt.compare(inputPassword, user.password);
+```
+
+## 2단계 인증 (2FA)
+
+```typescript
+// ✅ DO - TOTP 구현
+import speakeasy from 'speakeasy';
+
+// 시크릿 생성
+const secret = speakeasy.generateSecret({
+  name: 'MyApp (user@example.com)'
+});
+
+// QR 코드로 사용자에게 제공
+// 사용자가 Google Authenticator 등에 등록
+
+// 검증
+const verified = speakeasy.totp.verify({
+  secret: secret.base32,
+  encoding: 'base32',
+  token: userInputToken,
+  window: 2 // 시간 차이 허용
+});
+```
+
+## Content Security Policy (CSP)
+
+```typescript
+// ✅ DO - 웹 앱에 CSP 헤더 추가
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://trusted-cdn.com; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: https:; " +
+    "font-src 'self' data:; " +
+    "connect-src 'self' https://api.example.com;"
+  );
+  next();
+});
+```
