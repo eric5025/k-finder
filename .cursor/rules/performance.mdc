@@ -1,0 +1,282 @@
+---
+description: Memory management and performance optimization
+globs: **/*.ts, **/*.tsx
+alwaysApply: true
+---
+
+# Memory & Performance Optimization
+
+## 메모리 누수 방지
+
+### useEffect Cleanup
+- **항상 cleanup 함수 반환**: 이벤트 리스너, 타이머, 구독 등
+
+```typescript
+// ❌ DON'T - 메모리 누수!
+useEffect(() => {
+  const subscription = api.subscribe();
+  const timer = setInterval(() => {}, 1000);
+}, []);
+
+// ✅ DO - Cleanup으로 메모리 해제
+useEffect(() => {
+  const subscription = api.subscribe();
+  const timer = setInterval(() => {}, 1000);
+  
+  return () => {
+    subscription.unsubscribe();
+    clearInterval(timer);
+  };
+}, []);
+```
+
+### 이벤트 리스너 정리
+```typescript
+// ✅ DO
+useEffect(() => {
+  const handleScroll = () => { /* logic */ };
+  window.addEventListener('scroll', handleScroll);
+  
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+```
+
+## React Native 메모리 최적화
+
+### 이미지 최적화
+- **큰 이미지 캐싱**: react-native-fast-image 사용
+- **리사이징**: 필요한 크기로만 로드
+- **메모리 해제**: 언마운트 시 이미지 캐시 정리
+
+```typescript
+// ❌ DON'T
+<Image source={{ uri: largeImageUrl }} />
+
+// ✅ DO
+import FastImage from 'react-native-fast-image';
+
+<FastImage
+  source={{
+    uri: imageUrl,
+    priority: FastImage.priority.normal,
+    cache: FastImage.cacheControl.immutable
+  }}
+  style={{ width: 200, height: 200 }}
+  resizeMode={FastImage.resizeMode.cover}
+/>
+
+// Cleanup
+useEffect(() => {
+  return () => {
+    FastImage.clearMemoryCache();
+  };
+}, []);
+```
+
+### FlatList 최적화
+- **getItemLayout**: 일정한 높이일 때 사용
+- **removeClippedSubviews**: 화면 밖 뷰 제거
+- **maxToRenderPerBatch**: 한 번에 렌더링할 항목 수 제한
+
+```typescript
+// ✅ DO
+<FlatList
+  data={items}
+  renderItem={({ item }) => <Item {...item} />}
+  keyExtractor={item => item.id}
+  
+  // 성능 최적화
+  removeClippedSubviews={true}
+  maxToRenderPerBatch={10}
+  updateCellsBatchingPeriod={50}
+  initialNumToRender={10}
+  windowSize={5}
+  
+  // 일정한 높이일 때
+  getItemLayout={(data, index) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  })}
+/>
+```
+
+## 비동기 작업 최적화
+
+### AbortController 사용
+```typescript
+// ✅ DO - 취소 가능한 fetch
+useEffect(() => {
+  const controller = new AbortController();
+  
+  async function fetchData() {
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal
+      });
+      const data = await response.json();
+      setData(data);
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Fetch error:', error);
+      }
+    }
+  }
+  
+  fetchData();
+  
+  return () => controller.abort(); // 컴포넌트 언마운트 시 취소
+}, [url]);
+```
+
+### Promise.all 활용
+```typescript
+// ❌ DON'T - 순차 실행 (느림)
+const user = await fetchUser();
+const posts = await fetchPosts();
+const comments = await fetchComments();
+
+// ✅ DO - 병렬 실행 (빠름)
+const [user, posts, comments] = await Promise.all([
+  fetchUser(),
+  fetchPosts(),
+  fetchComments()
+]);
+```
+
+## 무거운 연산 최적화
+
+### Web Worker / Worker Thread
+```typescript
+// ✅ DO - CPU 집약적 작업은 워커로 분리
+import { WorkerManager } from './workers/WorkerManager';
+
+const result = await WorkerManager.runHeavyComputation(data);
+```
+
+### Debounce & Throttle
+```typescript
+// ✅ DO - 과도한 함수 호출 방지
+import { debounce, throttle } from 'lodash';
+
+// 검색 입력 (마지막 입력 후 실행)
+const debouncedSearch = useCallback(
+  debounce((query: string) => {
+    searchAPI(query);
+  }, 300),
+  []
+);
+
+// 스크롤 이벤트 (일정 간격마다 실행)
+const throttledScroll = useCallback(
+  throttle(() => {
+    handleScroll();
+  }, 100),
+  []
+);
+```
+
+## 상태 관리 최적화
+
+### 과도한 리렌더링 방지
+```typescript
+// ❌ DON'T - 매 렌더링마다 새 객체 생성
+<Component style={{ marginTop: 10 }} />
+
+// ✅ DO - 상수로 추출
+const styles = { marginTop: 10 };
+<Component style={styles} />
+
+// ✅ BETTER - StyleSheet 사용
+const styles = StyleSheet.create({
+  container: { marginTop: 10 }
+});
+```
+
+### 컨텍스트 분리
+```typescript
+// ❌ DON'T - 하나의 큰 Context
+const AppContext = createContext({
+  user, theme, language, settings, // 전부 한꺼번에
+});
+
+// ✅ DO - 용도별로 분리
+const UserContext = createContext(user);
+const ThemeContext = createContext(theme);
+const LanguageContext = createContext(language);
+// 관련없는 상태가 변경되어도 리렌더링 안됨!
+```
+
+## 메모리 프로파일링
+
+### React DevTools Profiler 활용
+```typescript
+// ✅ DO - 개발 환경에서 성능 측정
+import { Profiler } from 'react';
+
+<Profiler 
+  id="ComponentName" 
+  onRender={(id, phase, actualDuration) => {
+    console.log(`${id} ${phase} took ${actualDuration}ms`);
+  }}
+>
+  <YourComponent />
+</Profiler>
+```
+
+## 번들 크기 최적화
+
+### Tree Shaking & Code Splitting
+```typescript
+// ❌ DON'T
+import _ from 'lodash'; // 전체 라이브러리 로드
+
+// ✅ DO
+import debounce from 'lodash/debounce'; // 필요한 것만
+
+// ✅ DO - Dynamic Import
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+```
+
+## React Native 특화 최적화
+
+### Hermes 엔진 활용
+```javascript
+// android/app/build.gradle
+project.ext.react = [
+  enableHermes: true  // ✅ 메모리 사용량 감소, 시작 시간 개선
+]
+```
+
+### 네이티브 드라이버 사용
+```typescript
+// ✅ DO - 애니메이션에 네이티브 드라이버 사용
+Animated.timing(animValue, {
+  toValue: 1,
+  duration: 300,
+  useNativeDriver: true  // UI 스레드에서 실행
+}).start();
+```
+
+### 메모이제이션 전략
+```typescript
+// ✅ DO - useMemo로 비싼 계산 캐싱
+const expensiveValue = useMemo(() => {
+  return heavyComputation(data);
+}, [data]);
+
+// ✅ DO - useCallback으로 함수 메모이제이션
+const handlePress = useCallback(() => {
+  onItemPress(item.id);
+}, [item.id]);
+
+// ✅ DO - React.memo로 컴포넌트 메모이제이션
+const ListItem = React.memo(({ item }) => (
+  <View>
+    <Text>{item.name}</Text>
+  </View>
+), (prevProps, nextProps) => {
+  // 커스텀 비교 함수
+  return prevProps.item.id === nextProps.item.id;
+});
+```
