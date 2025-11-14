@@ -14,6 +14,9 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { LogIn, Chrome } from "lucide-react-native";
 import { RootStackParamList } from "../types";
 import { t } from "../i18n";
+import { getUIText } from "../i18n/translations";
+import LanguageDropdown from "../components/LanguageDropdown";
+import { useLanguage } from "../contexts/LanguageContext";
 import { signInWithGoogle, signInAnonymously } from "../services/auth";
 
 type LoginScreenNavigationProp = StackNavigationProp<
@@ -27,6 +30,17 @@ interface Props {
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const { currentLanguage } = useLanguage();
+  const loginTitle = getUIText(currentLanguage, "loginTitle");
+  const loginSubtitle = getUIText(currentLanguage, "loginSubtitle");
+  const loginGoogle = getUIText(currentLanguage, "loginGoogle");
+  const loginLoggingIn = getUIText(currentLanguage, "loginLoggingIn");
+  const loginSkip = getUIText(currentLanguage, "loginSkip");
+  const loginBenefits = getUIText(currentLanguage, "loginBenefits");
+  const benefitItems = [
+    getUIText(currentLanguage, "loginBenefitHistory"),
+    getUIText(currentLanguage, "loginBenefitPremium"),
+  ];
 
   const handleGoogleLogin = async () => {
     try {
@@ -69,12 +83,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <View style={styles.content}>
+          <View style={styles.languageSwitcher}>
+            <LanguageDropdown />
+          </View>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Korea Finder</Text>
-            <Text style={styles.subtitle}>
-              한국 기념품을 살땐? Korea Finder!
-            </Text>
+            <Text style={styles.title}>{loginTitle}</Text>
+            <Text style={styles.subtitle}>{loginSubtitle}</Text>
           </View>
 
           {/* Login Buttons */}
@@ -87,34 +102,32 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             >
               <View style={styles.buttonContent}>
                 <Chrome size={24} color="#FF6B00" />
-                <Text style={styles.buttonText}>Google로 로그인</Text>
+                <Text style={styles.buttonText}>{loginGoogle}</Text>
               </View>
             </TouchableOpacity>
 
             {isLoading && (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="small" color="white" />
-                <Text style={styles.loadingText}>로그인 중...</Text>
+                <Text style={styles.loadingText}>{loginLoggingIn}</Text>
               </View>
             )}
           </View>
 
           {/* Skip Button */}
           <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <Text style={styles.skipText}>나중에 하기</Text>
+            <Text style={styles.skipText}>{loginSkip}</Text>
           </TouchableOpacity>
 
           {/* Benefits */}
           <View style={styles.benefitsContainer}>
-            <Text style={styles.benefitsTitle}>로그인 혜택</Text>
-            <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>✓</Text>
-              <Text style={styles.benefitText}>검색 기록 저장</Text>
-            </View>
-            <View style={styles.benefitItem}>
-              <Text style={styles.benefitIcon}>✓</Text>
-              <Text style={styles.benefitText}>유료 결제 가능</Text>
-            </View>
+            <Text style={styles.benefitsTitle}>{loginBenefits}</Text>
+            {benefitItems.map((item) => (
+              <View key={item} style={styles.benefitItem}>
+                <Text style={styles.benefitIcon}>✓</Text>
+                <Text style={styles.benefitText}>{item}</Text>
+              </View>
+            ))}
           </View>
         </View>
       </SafeAreaView>
@@ -135,6 +148,10 @@ const styles = StyleSheet.create({
     padding: 24,
     paddingTop: 40,
     paddingBottom: 32,
+  },
+  languageSwitcher: {
+    alignItems: "flex-end",
+    marginBottom: 12,
   },
   header: {
     alignItems: "center",
