@@ -7,7 +7,7 @@ const LANGUAGE_STORAGE_KEY = "@travellens_language";
 const resources: Record<string, any> = {
   ko: {
     common: {
-      appName: "TravelLens",
+      appName: "Korea Finder",
       loading: "로딩 중...",
       error: "오류가 발생했습니다.",
       retry: "다시 시도",
@@ -75,7 +75,7 @@ const resources: Record<string, any> = {
   },
   en: {
     common: {
-      appName: "TravelLens",
+      appName: "Korea Finder",
       loading: "Loading...",
       error: "An error occurred.",
       retry: "Retry",
@@ -143,7 +143,7 @@ const resources: Record<string, any> = {
   },
   ja: {
     common: {
-      appName: "TravelLens",
+      appName: "Korea Finder",
       loading: "読み込み中...",
       error: "エラーが発生しました。",
       retry: "再試行",
@@ -211,7 +211,7 @@ const resources: Record<string, any> = {
   },
   zh: {
     common: {
-      appName: "TravelLens",
+      appName: "Korea Finder",
       loading: "加载中...",
       error: "发生错误。",
       retry: "重试",
@@ -278,7 +278,7 @@ const resources: Record<string, any> = {
   },
   es: {
     common: {
-      appName: "TravelLens",
+      appName: "Korea Finder",
       loading: "Cargando...",
       error: "Ocurrió un error.",
       retry: "Reintentar",
@@ -346,7 +346,7 @@ const resources: Record<string, any> = {
   },
   vi: {
     common: {
-      appName: "TravelLens",
+      appName: "Korea Finder",
       loading: "Đang tải...",
       error: "Đã xảy ra lỗi.",
       retry: "Thử lại",

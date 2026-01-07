@@ -72,15 +72,29 @@ export const useSearchLimit = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const data = userDoc.data();
-        const expiresAt = data?.premiumPass?.expiresAt as string | undefined;
-        if (expiresAt && new Date(expiresAt).getTime() > Date.now()) {
-          await applyPremiumState(true, expiresAt);
-          return true;
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const data = userDoc.data();
+          const expiresAt = data?.premiumPass?.expiresAt as string | undefined;
+          if (expiresAt && new Date(expiresAt).getTime() > Date.now()) {
+            await applyPremiumState(true, expiresAt);
+            return true;
+          }
+          await applyPremiumState(false, null);
+          return false;
+        } catch (firebaseError: any) {
+          // Firebase 권한 에러는 로컬 저장소로 대체
+          if (firebaseError?.code === "permission-denied" || firebaseError?.message?.includes("permissions")) {
+            if (__DEV__) {
+              // 개발 환경에서는 조용히 처리
+            } else {
+              console.warn("프리미엄 상태 조회 실패 (권한 없음):", firebaseError);
+            }
+            // 로컬 저장소로 대체
+          } else {
+            throw firebaseError;
+          }
         }
-        await applyPremiumState(false, null);
-        return false;
       }
 
       const localExpiresAt = await AsyncStorage.getItem(
@@ -110,8 +124,18 @@ export const useSearchLimit = () => {
           if (loadedProducts) {
             setProducts(loadedProducts as RNIap.Product[]);
           }
-        } catch (productError) {
-          console.warn("인앱 상품 불러오기 실패:", productError);
+        } catch (productError: any) {
+          // 개발 환경에서는 인앱 결제 상품이 없을 수 있음 (정상)
+          if (__DEV__) {
+            // 개발 환경에서는 조용히 처리 (에러 로그만)
+            if (productError?.message?.includes("No SKUs provided")) {
+              // 개발 환경에서 예상되는 에러 - 무시
+            } else {
+              console.warn("인앱 상품 불러오기 실패:", productError);
+            }
+          } else {
+            console.warn("인앱 상품 불러오기 실패:", productError);
+          }
         }
 
         await fetchPremiumStatus();

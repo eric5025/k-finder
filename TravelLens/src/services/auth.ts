@@ -6,23 +6,66 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import { Platform } from "react-native";
 import { GOOGLE_WEB_CLIENT_ID, GOOGLE_IOS_CLIENT_ID } from "@env";
 
-// Google Sign-In 초기화 (앱 시작 시 자동 실행)
-GoogleSignin.configure({
-  webClientId: GOOGLE_WEB_CLIENT_ID, // Firebase Web Client ID
-  iosClientId: GOOGLE_IOS_CLIENT_ID, // iOS Client ID (전용)
-  offlineAccess: true,
-});
+// Google Sign-In 초기화 함수 (필요할 때 호출)
+let isConfigured = false;
+const configureGoogleSignIn = () => {
+  if (isConfigured) return;
+  
+  try {
+    const webClientId = GOOGLE_WEB_CLIENT_ID;
+    const iosClientId = GOOGLE_IOS_CLIENT_ID;
+    
+    // 환경 변수 디버깅
+    console.log("🔍 환경 변수 확인:");
+    console.log("Platform:", Platform.OS);
+    console.log("GOOGLE_WEB_CLIENT_ID:", webClientId ? `${webClientId.substring(0, 20)}...` : "undefined");
+    console.log("GOOGLE_IOS_CLIENT_ID:", iosClientId ? `${iosClientId.substring(0, 20)}...` : "undefined");
+    
+    if (!webClientId) {
+      const errorMsg = 
+        "Google Web Client ID가 설정되지 않았습니다.\n\n" +
+        "로컬 개발 시: TravelLens 폴더에 .env 파일을 생성하세요.\n" +
+        "프로덕션 빌드: EAS Secrets를 확인하세요.";
+      
+      console.error("❌", errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    // iOS: GoogleService-Info.plist가 있으면 webClientId만 필요
+    // Android: webClientId 필요
+    const config: any = {
+      webClientId: webClientId,
+      offlineAccess: true,
+    };
+    
+    console.log("📝 Google Sign-In 설정:", JSON.stringify(config, null, 2));
+    
+    GoogleSignin.configure(config);
+    
+    isConfigured = true;
+    console.log("✓ Google Sign-In 초기화 완료");
+  } catch (error) {
+    console.error("❌ Google Sign-In 초기화 실패:", error);
+    throw error;
+  }
+};
 
 // Google 로그인 (네이티브 모듈 사용)
 export const signInWithGoogle = async () => {
   try {
     console.log("🔐 Google 로그인 시작 (네이티브 방식)...");
+    
+    // Google Sign-In 초기화 (매번 확인)
+    configureGoogleSignIn();
 
-    // Google Play Services 확인
-    await GoogleSignin.hasPlayServices();
-    console.log("✓ Google Play Services 사용 가능");
+    // Android에서만 Google Play Services 확인 (iOS에서는 불필요)
+    if (Platform.OS === "android") {
+      await GoogleSignin.hasPlayServices();
+      console.log("✓ Google Play Services 사용 가능");
+    }
 
     // Google 로그인 화면 표시
     const userInfo = await GoogleSignin.signIn();
