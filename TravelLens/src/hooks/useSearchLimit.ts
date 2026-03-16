@@ -72,15 +72,29 @@ export const useSearchLimit = () => {
     try {
       const user = auth.currentUser;
       if (user) {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        const data = userDoc.data();
-        const expiresAt = data?.premiumPass?.expiresAt as string | undefined;
-        if (expiresAt && new Date(expiresAt).getTime() > Date.now()) {
-          await applyPremiumState(true, expiresAt);
-          return true;
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const data = userDoc.data();
+          const expiresAt = data?.premiumPass?.expiresAt as string | undefined;
+          if (expiresAt && new Date(expiresAt).getTime() > Date.now()) {
+            await applyPremiumState(true, expiresAt);
+            return true;
+          }
+          await applyPremiumState(false, null);
+          return false;
+        } catch (firebaseError: any) {
+          // Firebase 권한 에러는 로컬 저장소로 대체
+          if (firebaseError?.code === "permission-denied" || firebaseError?.message?.includes("permissions")) {
+            if (__DEV__) {
+              // 개발 환경에서는 조용히 처리
+            } else {
+              console.warn("프리미엄 상태 조회 실패 (권한 없음):", firebaseError);
+            }
+            // 로컬 저장소로 대체
+          } else {
+            throw firebaseError;
+          }
         }
-        await applyPremiumState(false, null);
-        return false;
       }
 
       const localExpiresAt = await AsyncStorage.getItem(
@@ -110,8 +124,18 @@ export const useSearchLimit = () => {
           if (loadedProducts) {
             setProducts(loadedProducts as RNIap.Product[]);
           }
-        } catch (productError) {
-          console.warn("인앱 상품 불러오기 실패:", productError);
+        } catch (productError: any) {
+          // 개발 환경에서는 인앱 결제 상품이 없을 수 있음 (정상)
+          if (__DEV__) {
+            // 개발 환경에서는 조용히 처리 (에러 로그만)
+            if (productError?.message?.includes("No SKUs provided")) {
+              // 개발 환경에서 예상되는 에러 - 무시
+            } else {
+              console.warn("인앱 상품 불러오기 실패:", productError);
+            }
+          } else {
+            console.warn("인앱 상품 불러오기 실패:", productError);
+          }
         }
 
         await fetchPremiumStatus();
@@ -172,7 +196,7 @@ export const useSearchLimit = () => {
       const user = auth.currentUser;
       // 로그인 체크는 호출하는 쪽(HomeScreen)에서 처리
       if (!user || user.isAnonymous) {
-        return;
+        return { success: false, shouldCloseModal: false };
       }
 
       if (!products.length) {
@@ -180,7 +204,7 @@ export const useSearchLimit = () => {
           "상품 정보 없음",
           "스토어에서 상품 정보를 불러오지 못했습니다."
         );
-        return;
+        return { success: false, shouldCloseModal: false };
       }
 
       const targetProduct = products.find(
@@ -194,7 +218,7 @@ export const useSearchLimit = () => {
 
       if (!targetProduct) {
         Alert.alert("상품 정보 없음", "구매 가능한 상품을 찾을 수 없습니다.");
-        return;
+        return { success: false, shouldCloseModal: false };
       }
 
       const productId = 'productId' in targetProduct ? targetProduct.productId :
@@ -226,7 +250,9 @@ export const useSearchLimit = () => {
         );
         await applyPremiumState(true, expiresAt);
         Alert.alert("완료", "5일 패스가 활성화되었습니다.");
+        return { success: true, shouldCloseModal: true };
       }
+      return { success: false, shouldCloseModal: false };
     } catch (error: any) {
       if (error?.code !== "E_USER_CANCELLED") {
         console.error("구매 오류:", error);
@@ -235,10 +261,76 @@ export const useSearchLimit = () => {
           "결제를 완료할 수 없습니다. 잠시 후 다시 시도해주세요."
         );
       }
+      return { success: false, shouldCloseModal: false };
     } finally {
       setIsProcessingPurchase(false);
     }
   }, [applyPremiumState, products]);
+
+  const restorePurchases = useCallback(async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user || user.isAnonymous) {
+        Alert.alert("로그인 필요", "구매 복원을 위해 로그인이 필요합니다.");
+        return false;
+      }
+
+      setIsProcessingPurchase(true);
+      const purchases = await RNIap.getAvailablePurchases();
+      
+      const premiumPurchase = purchases.find((purchase) => {
+        const purchaseId = 'productId' in purchase ? purchase.productId :
+                          'productIds' in purchase ? (purchase.productIds as string[])?.[0] :
+                          null;
+        return purchaseId === PRODUCT_IDS[0];
+      });
+
+      if (premiumPurchase) {
+        // 기존 구매가 있으면 만료 시간 확인 및 갱신
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const data = userDoc.data();
+        const existingExpiresAt = data?.premiumPass?.expiresAt as string | undefined;
+        
+        let expiresAt: string;
+        if (existingExpiresAt && new Date(existingExpiresAt).getTime() > Date.now()) {
+          // 기존 구매가 아직 유효하면 기존 만료 시간 유지
+          expiresAt = existingExpiresAt;
+        } else {
+          // 새로 5일 추가
+          expiresAt = new Date(
+            Date.now() + PREMIUM_DURATION_MS
+          ).toISOString();
+        }
+
+        await setDoc(
+          doc(db, "users", user.uid),
+          {
+            premiumPass: {
+              productId: PRODUCT_IDS[0],
+              expiresAt,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+          { merge: true }
+        );
+        await applyPremiumState(true, expiresAt);
+        Alert.alert("복원 완료", "구매 내역이 복원되었습니다.");
+        return true;
+      } else {
+        Alert.alert("구매 내역 없음", "복원할 구매 내역이 없습니다.");
+        return false;
+      }
+    } catch (error: any) {
+      console.error("구매 복원 오류:", error);
+      Alert.alert(
+        "오류",
+        "구매 내역을 복원할 수 없습니다. 잠시 후 다시 시도해주세요."
+      );
+      return false;
+    } finally {
+      setIsProcessingPurchase(false);
+    }
+  }, [applyPremiumState]);
 
   const showLimitAlert = useCallback(() => {
     Alert.alert(
@@ -258,6 +350,7 @@ export const useSearchLimit = () => {
     canUseSearch,
     consumeSearch,
     purchaseUnlimited,
+    restorePurchases,
     isProcessingPurchase,
     showLimitAlert,
     products,

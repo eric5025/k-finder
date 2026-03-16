@@ -1,4 +1,4 @@
-# 🧡 TravelLens - AI 기반 한국 기념품 인식 앱
+# 🧡 Korea Finder - AI 기반 한국 기념품 인식 앱
 
 외국인 관광객을 위한 AI 기반 모바일 앱. 사진을 찍으면 한국 기념품을 자동으로 인식하고 다국어 정보를 제공합니다.
 
@@ -154,4 +154,4 @@ eas build --platform android
 
 ---
 
-**TravelLens** - 한국 기념품을 더 쉽게 발견하세요! 🇰🇷✨
+**Korea Finder** - 한국 기념품을 더 쉽게 발견하세요! 🇰🇷✨
