@@ -43,15 +43,23 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     canUseSearch,
     consumeSearch,
     purchaseUnlimited,
+    restorePurchases,
     isProcessingPurchase,
     products,
   } = useSearchLimit();
   const premiumProduct = useMemo(() => products?.[0], [products]);
+  
+  // 실제 상품 가격 가져오기 (없으면 기본값 사용)
+  const premiumPriceText = useMemo(() => {
+    if (premiumProduct && 'localizedPrice' in premiumProduct) {
+      return premiumProduct.localizedPrice as string;
+    }
+    return PREMIUM_PRICE_TEXT;
+  }, [premiumProduct]);
 
   const subtitle = getUIText(currentLanguage, "appSubtitle");
   const takePhotoTitle = getUIText(currentLanguage, "takePhoto");
   const selectPhotoTitle = getUIText(currentLanguage, "selectPhoto");
-  const premiumPriceText = PREMIUM_PRICE_TEXT;
   const limitDescriptionText = `${getUIText(
     currentLanguage,
     "limitPricePrefix"
@@ -199,7 +207,14 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       );
       return;
     }
-    await purchaseUnlimited();
+    const result = await purchaseUnlimited();
+    if (result?.success && result?.shouldCloseModal) {
+      setPremiumModalVisible(false);
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    await restorePurchases();
   };
 
   return (
@@ -334,6 +349,16 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
               >
                 <Text style={styles.modalCloseButtonText}>
                   {getUIText(currentLanguage, "premiumClose")}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.modalRestoreButton}
+                onPress={handleRestorePurchases}
+                disabled={isProcessingPurchase}
+              >
+                <Text style={styles.modalRestoreButtonText}>
+                  구매 복원
                 </Text>
               </TouchableOpacity>
             </View>
@@ -506,6 +531,16 @@ const styles = StyleSheet.create({
   modalCloseButtonText: {
     color: "#6B6B6B",
     fontSize: 14,
+  },
+  modalRestoreButton: {
+    alignItems: "center",
+    marginTop: 8,
+    paddingVertical: 8,
+  },
+  modalRestoreButtonText: {
+    color: "#E63946",
+    fontSize: 13,
+    fontWeight: "600",
   },
   historyBtn: {
     width: 44,
