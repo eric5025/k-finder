@@ -26,6 +26,11 @@ echo "PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}" > .env
 echo "GOOGLE_WEB_CLIENT_ID=${GOOGLE_WEB_CLIENT_ID}" >> .env
 echo "GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID}" >> .env
 
+if [ -n "$GOOGLE_MAPS_API_KEY" ]; then
+  echo "GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}" >> .env
+  echo "✓ GOOGLE_MAPS_API_KEY 추가됨"
+fi
+
 echo "✓ .env 파일 생성 완료"
 echo "✓ PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY:0:20}..."
 echo "✓ GOOGLE_WEB_CLIENT_ID: ${GOOGLE_WEB_CLIENT_ID:0:20}..."

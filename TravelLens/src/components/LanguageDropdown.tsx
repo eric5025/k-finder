@@ -29,9 +29,15 @@ const SUPPORTED_LANGUAGES = [
   { code: "hi", name: "힌디어", nativeName: "हिन्दी", flag: "🇮🇳" },
 ];
 
-const LanguageDropdown: React.FC = () => {
+interface LanguageDropdownProps {
+  /** 밝은 홈 배경용 (어두운 텍스트·테두리) */
+  tone?: "light" | "dark";
+}
+
+const LanguageDropdown: React.FC<LanguageDropdownProps> = ({ tone = "dark" }) => {
   const [isVisible, setIsVisible] = useState(false);
   const { currentLanguage, setLanguage } = useLanguage();
+  const isLight = tone === "light";
 
   const currentLangName =
     SUPPORTED_LANGUAGES.find((lang) => lang.code === currentLanguage)
@@ -49,11 +55,18 @@ const LanguageDropdown: React.FC = () => {
   return (
     <View>
       <TouchableOpacity
-        style={styles.dropdownButton}
+        style={[
+          styles.dropdownButton,
+          isLight && styles.dropdownButtonLight,
+        ]}
         onPress={() => setIsVisible(true)}
       >
-        <Text style={styles.dropdownText}>{currentLangFlag} {currentLangName}</Text>
-        <ChevronDown size={16} color="white" />
+        <Text
+          style={[styles.dropdownText, isLight && styles.dropdownTextLight]}
+        >
+          {currentLangFlag} {currentLangName}
+        </Text>
+        <ChevronDown size={16} color={isLight ? "#3C3C43" : "white"} />
       </TouchableOpacity>
 
       <Modal
@@ -110,6 +123,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "500",
+  },
+  dropdownButtonLight: {
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
+    borderColor: "rgba(0, 0, 0, 0.08)",
+  },
+  dropdownTextLight: {
+    color: "#1C1C1E",
   },
   modalOverlay: {
     flex: 1,

@@ -9,15 +9,10 @@ import HomeScreen from "./src/screens/HomeScreen";
 import LoadingScreen from "./src/screens/LoadingScreen";
 import DetailScreen from "./src/screens/DetailScreen";
 import HistoryScreen from "./src/screens/HistoryScreen";
+import TouristMapScreen from "./src/screens/TouristMapScreen";
+import ProfileScreen from "./src/screens/ProfileScreen";
 import { LanguageProvider } from "./src/contexts/LanguageContext";
-
-export type RootStackParamList = {
-  Login: undefined;
-  Home: undefined;
-  Loading: { imageUri: string };
-  Detail: { analysisResult: any };
-  History: undefined;
-};
+import type { RootStackParamList } from "./src/types";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -52,6 +47,8 @@ export default function App() {
           <Stack.Screen name="Loading" component={LoadingScreen} />
           <Stack.Screen name="Detail" component={DetailScreen} />
           <Stack.Screen name="History" component={HistoryScreen} />
+          <Stack.Screen name="TouristMap" component={TouristMapScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
         </Stack.Navigator>
         </NavigationContainer>
       </LanguageProvider>

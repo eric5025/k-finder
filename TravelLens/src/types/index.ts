@@ -54,4 +54,6 @@ export type RootStackParamList = {
   Loading: { imageUri: string };
   Detail: { analysisResult: AnalysisResult };
   History: undefined;
+  TouristMap: undefined;
+  Profile: undefined;
 };

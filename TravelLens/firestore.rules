@@ -17,6 +17,23 @@ service cloud.firestore {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
+
+    // 관광지 (콘솔에서 시드; 익명 제외한 로그인 사용자만 읽기)
+    match /tourist_locations/{docId} {
+      allow read: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow write: if false;
+    }
+
+    // 사용자 실시간 위치 (Google 등 로그인만, 본인 문서만 쓰기; 혼잡도 집계를 위해 동일 조건으로 읽기 허용)
+    match /user_locations/{userId} {
+      allow read: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow create, update: if request.auth != null
+        && request.auth.uid == userId
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
     
     // 나머지는 차단
     match /{document=**} {

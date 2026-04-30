@@ -80,7 +80,7 @@ eas build --platform android --profile development
 
 **현재 설정:**
 - Version: `1.0.0`
-- iOS Build Number: `9`
+- iOS Build Number: `10`
 - Android Version Code: `1`
 
 **다음 업데이트 시:**

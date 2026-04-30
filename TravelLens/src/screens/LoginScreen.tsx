@@ -1,255 +1,284 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
   Alert,
   ActivityIndicator,
+  ImageBackground,
+  Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
+import { Chrome, Sparkles, MapPin, Camera } from "lucide-react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { LogIn, Chrome } from "lucide-react-native";
 import { RootStackParamList } from "../types";
-import { t } from "../i18n";
 import { getUIText } from "../i18n/translations";
 import LanguageDropdown from "../components/LanguageDropdown";
 import { useLanguage } from "../contexts/LanguageContext";
 import { signInWithGoogle, signInAnonymously } from "../services/auth";
 
-type LoginScreenNavigationProp = StackNavigationProp<
-  RootStackParamList,
-  "Login"
->;
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
 
 interface Props {
   navigation: LoginScreenNavigationProp;
 }
 
+const FEATURES = [
+  { icon: Camera,   labelKey: "loginBenefitHistory" as const },
+  { icon: MapPin,   labelKey: "loginBenefitPremium" as const },
+  { icon: Sparkles, labelKey: "loginBenefits" as const },
+];
+
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { currentLanguage } = useLanguage();
-  const loginTitle = getUIText(currentLanguage, "loginTitle");
-  const loginSubtitle = getUIText(currentLanguage, "loginSubtitle");
-  const loginGoogle = getUIText(currentLanguage, "loginGoogle");
-  const loginLoggingIn = getUIText(currentLanguage, "loginLoggingIn");
-  const loginSkip = getUIText(currentLanguage, "loginSkip");
-  const loginBenefits = getUIText(currentLanguage, "loginBenefits");
-  const benefitItems = [
-    getUIText(currentLanguage, "loginBenefitHistory"),
-    getUIText(currentLanguage, "loginBenefitPremium"),
-  ];
+  const insets = useSafeAreaInsets();
 
   const handleGoogleLogin = async () => {
     try {
       setIsLoading(true);
       await signInWithGoogle();
-      
-      // 로그인 성공!
       Alert.alert("로그인 성공", "Google 계정으로 로그인되었습니다.", [
-        {
-          text: "확인",
-          onPress: () => navigation.replace("Home"),
-        },
+        { text: "확인", onPress: () => navigation.replace("Home") },
       ]);
     } catch (error: any) {
-      console.error("❌ Google 로그인 오류:", error);
       Alert.alert("로그인 실패", error.message || "Google 로그인에 실패했습니다.");
     } finally {
       setIsLoading(false);
     }
   };
 
-
   const handleSkip = async () => {
     try {
       setIsLoading(true);
-      // 익명 로그인 실행
       await signInAnonymously();
-      navigation.replace("Home");
-    } catch (error: any) {
-      console.error("익명 로그인 오류:", error);
-      // 실패해도 홈으로 이동
-      navigation.replace("Home");
-    } finally {
-      setIsLoading(false);
-    }
+    } catch {}
+    setIsLoading(false);
+    navigation.replace("Home");
   };
 
   return (
-    <LinearGradient colors={["#E63946", "#F77F88"]} style={styles.gradient}>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-        <View style={styles.content}>
-          <View style={styles.languageSwitcher}>
-            <LanguageDropdown />
-          </View>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.title}>{loginTitle}</Text>
-            <Text style={styles.subtitle}>{loginSubtitle}</Text>
-          </View>
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" />
 
-          {/* Login Buttons */}
-          <View style={styles.loginContainer}>
-            {/* Google Login */}
-            <TouchableOpacity
-              style={styles.loginButton}
-              onPress={handleGoogleLogin}
-              disabled={isLoading}
-            >
-              <View style={styles.buttonContent}>
-                <Chrome size={24} color="#FF6B00" />
-                <Text style={styles.buttonText}>{loginGoogle}</Text>
-              </View>
-            </TouchableOpacity>
+      {/* ── 상단 히어로 (명동 사진 + 오버레이) ── */}
+      <ImageBackground
+        source={require("../../assets/myeongdong.png")}
+        style={styles.hero}
+        imageStyle={styles.heroImg}
+      >
+        <LinearGradient
+          colors={["rgba(0,0,0,0.25)", "rgba(45,36,32,0.92)"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
 
-            {isLoading && (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color="white" />
-                <Text style={styles.loadingText}>{loginLoggingIn}</Text>
-              </View>
-            )}
-          </View>
-
-          {/* Skip Button */}
-          <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-            <Text style={styles.skipText}>{loginSkip}</Text>
-          </TouchableOpacity>
-
-          {/* Benefits */}
-          <View style={styles.benefitsContainer}>
-            <Text style={styles.benefitsTitle}>{loginBenefits}</Text>
-            {benefitItems.map((item) => (
-              <View key={item} style={styles.benefitItem}>
-                <Text style={styles.benefitIcon}>✓</Text>
-                <Text style={styles.benefitText}>{item}</Text>
-              </View>
-            ))}
-          </View>
+        {/* 언어 선택 */}
+        <View style={[styles.langWrap, { paddingTop: insets.top + 12 }]}>
+          <LanguageDropdown tone="dark" />
         </View>
-      </SafeAreaView>
-    </LinearGradient>
+
+        {/* 브랜드 */}
+        <View style={styles.brandWrap}>
+          <Text style={styles.brandName}>Korea Finder</Text>
+          <Text style={styles.brandSub}>
+            {getUIText(currentLanguage, "appSubtitle")}
+          </Text>
+        </View>
+      </ImageBackground>
+
+      {/* ── 하단 카드 ── */}
+      <View style={[styles.card, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+
+        {/* 특징 3줄 */}
+        <View style={styles.featureRow}>
+          {FEATURES.map(({ icon: Icon, labelKey }) => (
+            <View key={labelKey} style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <Icon size={20} color="#E63946" />
+              </View>
+              <Text style={styles.featureLabel} numberOfLines={2}>
+                {getUIText(currentLanguage, labelKey)}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.divider} />
+
+        {/* Google 로그인 */}
+        <TouchableOpacity
+          style={[styles.googleBtn, isLoading && { opacity: 0.7 }]}
+          onPress={handleGoogleLogin}
+          disabled={isLoading}
+          activeOpacity={0.88}
+        >
+          {isLoading ? (
+            <ActivityIndicator size="small" color="#E63946" />
+          ) : (
+            <Chrome size={22} color="#E63946" />
+          )}
+          <Text style={styles.googleBtnText}>
+            {isLoading
+              ? getUIText(currentLanguage, "loginLoggingIn")
+              : getUIText(currentLanguage, "loginGoogle")}
+          </Text>
+        </TouchableOpacity>
+
+        {/* 건너뛰기 */}
+        <TouchableOpacity
+          style={styles.skipBtn}
+          onPress={handleSkip}
+          disabled={isLoading}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.skipText}>
+            {getUIText(currentLanguage, "loginSkip")}
+          </Text>
+        </TouchableOpacity>
+
+        <Text style={styles.disclaimer}>
+          계속 진행하면 서비스 이용약관에 동의하는 것으로 간주됩니다.
+        </Text>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
+    backgroundColor: "#2D2420",
   },
-  gradient: {
+
+  /* 히어로 */
+  hero: {
     flex: 1,
+    justifyContent: "flex-end",
   },
-  content: {
-    flex: 1,
-    justifyContent: "space-between",
-    padding: 24,
-    paddingTop: 40,
-    paddingBottom: 32,
+  heroImg: {
+    resizeMode: "cover",
   },
-  languageSwitcher: {
-    alignItems: "flex-end",
-    marginBottom: 12,
+  langWrap: {
+    position: "absolute",
+    top: 0,
+    right: 16,
   },
-  header: {
-    alignItems: "center",
-    marginTop: 16,
+  brandWrap: {
+    paddingHorizontal: 24,
+    paddingBottom: 36,
   },
-  title: {
-    fontSize: 40,
-    fontWeight: "700",
-    color: "white",
-    marginTop: 24,
-    marginBottom: 12,
-    letterSpacing: 0.5,
+  brandName: {
+    fontSize: 36,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+    textShadowColor: "rgba(0,0,0,0.4)",
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
-  subtitle: {
+  brandSub: {
     fontSize: 15,
-    color: "rgba(255, 255, 255, 0.85)",
-    textAlign: "center",
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 6,
     lineHeight: 22,
+    textShadowColor: "rgba(0,0,0,0.3)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
-  loginContainer: {
-    gap: 12,
+
+  /* 하단 카드 */
+  card: {
+    backgroundColor: "#E5D4CE",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    marginTop: -24,
   },
-  loginButton: {
-    backgroundColor: "white",
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  buttonContent: {
+
+  /* 특징 */
+  featureRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+    justifyContent: "space-around",
+    marginBottom: 20,
   },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: "#E63946",
-  },
-  loadingContainer: {
-    flexDirection: "row",
+  featureItem: {
     alignItems: "center",
-    justifyContent: "center",
+    width: 90,
     gap: 8,
-    marginTop: 8,
   },
-  loadingText: {
-    color: "white",
-    fontSize: 13,
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  skipButton: {
-    alignSelf: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+  featureLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#4A3F3A",
+    textAlign: "center",
+    lineHeight: 15,
   },
-  skipText: {
-    color: "rgba(255, 255, 255, 0.9)",
-    fontSize: 15,
-    fontWeight: "500",
+
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.08)",
+    marginBottom: 20,
   },
-  benefitsContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.12)",
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.2)",
-  },
-  benefitsTitle: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 10,
-    letterSpacing: 0.3,
-  },
-  benefitItem: {
+
+  /* Google 버튼 */
+  googleBtn: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingVertical: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
+    marginBottom: 12,
+  },
+  googleBtnText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1C1C1E",
+  },
+
+  /* 건너뛰기 */
+  skipBtn: {
+    alignItems: "center",
+    paddingVertical: 12,
     marginBottom: 8,
   },
-  benefitIcon: {
-    color: "#FFD89B",
-    fontSize: 16,
-    marginRight: 10,
-    fontWeight: "bold",
+  skipText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#6B5E58",
   },
-  benefitText: {
-    color: "rgba(255, 255, 255, 0.85)",
-    fontSize: 13,
+
+  disclaimer: {
+    fontSize: 10,
+    color: "#9C8F8A",
+    textAlign: "center",
+    lineHeight: 15,
   },
 });
 
 export default LoginScreen;
-
