@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 // EAS Build 환경 감지 (여러 환경 변수 체크)
 const isEASBuild = process.env.EAS_BUILD === 'true' || 
                    process.env.EAS_BUILD_PLATFORM || 
@@ -19,7 +21,10 @@ if (isEASBuild) {
     const envContent = [
       `PERPLEXITY_API_KEY=${process.env.PERPLEXITY_API_KEY || ''}`,
       `GOOGLE_WEB_CLIENT_ID=${process.env.GOOGLE_WEB_CLIENT_ID || ''}`,
-      `GOOGLE_IOS_CLIENT_ID=${process.env.GOOGLE_IOS_CLIENT_ID || ''}`
+      `GOOGLE_IOS_CLIENT_ID=${process.env.GOOGLE_IOS_CLIENT_ID || ''}`,
+      `GOOGLE_MAPS_API_KEY=${process.env.GOOGLE_MAPS_API_KEY || ''}`,
+      `GOOGLE_WEATHER_API_KEY=${process.env.GOOGLE_WEATHER_API_KEY || ''}`,
+      `ITS_CCTV_API_KEY=${process.env.ITS_CCTV_API_KEY || ''}`
     ].join('\n');
     
     fs.writeFileSync(envPath, envContent);
@@ -27,6 +32,7 @@ if (isEASBuild) {
     console.log(`✓ PERPLEXITY_API_KEY: ${process.env.PERPLEXITY_API_KEY ? process.env.PERPLEXITY_API_KEY.substring(0, 20) + '...' : '없음'}`);
     console.log(`✓ GOOGLE_WEB_CLIENT_ID: ${process.env.GOOGLE_WEB_CLIENT_ID ? process.env.GOOGLE_WEB_CLIENT_ID.substring(0, 20) + '...' : '없음'}`);
     console.log(`✓ GOOGLE_IOS_CLIENT_ID: ${process.env.GOOGLE_IOS_CLIENT_ID ? process.env.GOOGLE_IOS_CLIENT_ID.substring(0, 20) + '...' : '없음'}`);
+    console.log(`✓ GOOGLE_MAPS_API_KEY: ${process.env.GOOGLE_MAPS_API_KEY ? process.env.GOOGLE_MAPS_API_KEY.substring(0, 12) + '...' : '없음'}`);
   } catch (error) {
     console.error('❌ .env 파일 생성 실패:', error);
     throw error;
@@ -34,6 +40,8 @@ if (isEASBuild) {
 } else {
   console.log('ℹ️  로컬 개발 환경 - 기존 .env 파일 사용');
 }
+
+const googleMapsKey = process.env.GOOGLE_MAPS_API_KEY || '';
 
 module.exports = {
   expo: {
@@ -55,12 +63,16 @@ module.exports = {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.travellens.app",
-      buildNumber: "9",
+      buildNumber: "12",
       googleServicesFile: "./GoogleService-Info.plist",
+      config: {
+        googleMapsApiKey: googleMapsKey,
+      },
       infoPlist: {
         NSCameraUsageDescription: "We need access to your camera to take photos of Korean souvenirs.",
         NSPhotoLibraryUsageDescription: "We need access to your photo library to select souvenir images.",
-        NSLocationWhenInUseUsageDescription: "We use your location to show nearby souvenir shops on the map.",
+        NSLocationWhenInUseUsageDescription: "We use your location for tourist-area crowd levels on the map and nearby context.",
+        NSMotionUsageDescription: "We use motion data to count your daily steps.",
         ITSAppUsesNonExemptEncryption: false,
         CFBundleURLTypes: [
           {
@@ -74,6 +86,11 @@ module.exports = {
     android: {
       package: "com.travellens.app",
       versionCode: 1,
+      config: {
+        googleMaps: {
+          apiKey: googleMapsKey,
+        },
+      },
       permissions: [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

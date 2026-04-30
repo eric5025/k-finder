@@ -1,6 +1,7 @@
 declare module "@env" {
   export const PERPLEXITY_API_KEY: string;
   export const GOOGLE_MAPS_API_KEY: string;
+  export const GOOGLE_WEATHER_API_KEY: string;
   export const KAKAO_MAP_API_KEY: string;
   
   // Firebase Configuration
@@ -16,6 +17,9 @@ declare module "@env" {
   export const GOOGLE_WEB_CLIENT_ID: string;
   export const GOOGLE_IOS_CLIENT_ID: string;
   
+  // 국토교통부 ITS CCTV API
+  export const ITS_CCTV_API_KEY: string;
+
   // App Configuration
   export const APP_ENV: string;
   export const DEBUG: string;
